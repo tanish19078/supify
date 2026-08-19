@@ -1313,5 +1313,43 @@ will ask.
 | **Gate** | A cap on trust that a deficiency imposes regardless of other scores. |
 | **Freshness** | Decay factor from a claim's age against its validity window. |
 | **Snapshot** | Cached, versioned trust computation. A cache — never the truth. |
-| **Dual control** | Two independent verifiers required for high-weight attestations (four-eyes). |
+| Dual control | Two independent verifiers required for high-weight attestations (four-eyes). |
 | **The Asymmetry Razor** | Every feature must reduce the cost of *finding* or the cost of *trusting*. Or it is cut. |
+
+---
+
+## Appendix C — Working Rules and Non-Negotiable Invariants
+
+### C.1 Non-negotiable invariants
+
+#### On trust and verification
+1. **Never add a boolean verification flag.** No `isVerified`, `hasGST`, `isTrusted`. Verification state is always `{ method, verifiedAt, validUntil, attestor, evidence }`. A boolean cannot express *how*, *when*, or *until when*, and those are the entire point.
+2. **Never compute a trust score on the client.** The server computes; the client renders. A score computed in the browser is a score that can be reverse-engineered and forged.
+3. **Never render trust without its method and date.** "Verified ✓" alone is a lie of omission. "Verified — registry check, 4 days ago" is information. Always the triple: state, method, recency.
+4. **Never render an empty or unknown state as neutral.** A blank field reads as tacit approval. Unknown is an explicit, designed, rendered state.
+5. **Never convey trust by colour alone.** Always text + icon + colour. This is both an accessibility requirement and an information-integrity one.
+6. **Never let a supplier-facing code path write to attestation or verification state.** The supplier asserts; the platform attests. Separate concerns, separate writes, no exceptions.
+
+#### On structure
+7. **Never hardcode a claim type.** No `switch (claimType)` anywhere. Claim types are data from a registry, and the UI is generated from their descriptors. Adding a new certification must be a data change, not a code change.
+8. **Never import across features.** `features/discovery` may not import from `features/verification-review`. Cross-feature composition happens at the `app` layer. Dependencies point downward only: `app → features → entities → shared`.
+9. **Never render trust outside the entity components.** `TrustBand`, `ClaimRow`, `MethodChip` and family live in `entities/` and are the *only* way trust is displayed. Duplicating them per feature guarantees drift.
+10. **Never consume wire shapes directly in the UI.** The API boundary maps wire → domain types. The backend does not exist yet and its shapes *will* change.
+
+#### On state
+11. **Anything shareable belongs in the URL.** Search queries, filters, sort, pagination, active tab, selected claim, comparison set. If a user might bookmark it, send it to a colleague, or reach it with the back button, it is URL state — not component state.
+12. **Never lose a supplier's work.** Onboarding spans days on unreliable connections. Persist per-step, locally and immediately.
+
+### C.2 Definition of done for surfaces
+A surface is not finished until **all** of these hold:
+- [ ] All seven render states exist: idle, loading, empty, partial, error, stale, **pending-external**
+- [ ] Renders correctly against the **adversarial fixture** — the supplier with expired attestations, a revoked claim, an applied gate, a 90-character legal name, and 14 claims
+- [ ] Trust rendered exclusively through entity components
+- [ ] Shareable state is in the URL and survives reload and back-navigation
+- [ ] Fully keyboard operable (mandatory everywhere; non-negotiable in the verifier console)
+- [ ] No information conveyed by colour alone
+- [ ] No cross-feature imports
+- [ ] Loading states match final layout — no layout shift on content arrival
+
+### C.3 Fixtures requirements
+Fixtures must be **adversarial toward our own UI**. Every fixture set must include: an expired attestation, a revoked claim, a gated supplier, a supplier mid-dual-control, a zero-result search, a claim with eleven pieces of evidence, a supplier with only self-declared claims, and a name long enough to break rigid layouts.
