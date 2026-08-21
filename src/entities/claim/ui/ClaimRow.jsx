@@ -10,11 +10,18 @@ const stateMeta = {
   revoked: { icon: '✕', label: 'Revoked' },
 }
 
-export function ClaimRow({ claim }) {
+function formatDate(value) {
+  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+}
+
+export function ClaimRow({ claim, isOpen = false, onToggle = null }) {
   const meta = stateMeta[claim.state] || { icon: '?', label: claim.state }
   const date = claim.verifiedAt
-    ? `Established ${new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(claim.verifiedAt))}`
+    ? `Established ${formatDate(claim.verifiedAt)}`
     : 'Not yet independently established'
+  const validity = claim.validUntil
+    ? `Attestation ${new Date(claim.validUntil).getTime() < Date.now() ? 'lapsed' : 'valid until'} ${formatDate(claim.validUntil)}`
+    : null
 
   return (
     <article className={`claim-row claim-row--${claim.state}`}>
@@ -23,8 +30,25 @@ export function ClaimRow({ claim }) {
         <h4>{claim.label}</h4>
         <p>{claim.value}</p>
         <span>{claim.methodLabel} · {date}{meta.label ? ` · ${meta.label}` : ''}</span>
+        {isOpen && (
+          <div>
+            <p><strong>Evidence on record</strong></p>
+            {claim.evidence.length === 0 && <p>No evidence attached yet</p>}
+            {claim.evidence.map((item) => (
+              <p key={item.label}>{item.label} · {item.kindLabel} · issued {formatDate(item.issuedOn)}</p>
+            ))}
+            {validity && <p>{validity}</p>}
+          </div>
+        )}
       </div>
-      <div className="claim-row__evidence">{claim.evidenceCount} evidence item{claim.evidenceCount === 1 ? '' : 's'}</div>
+      <div className="claim-row__evidence">
+        {claim.evidenceCount} evidence item{claim.evidenceCount === 1 ? '' : 's'}
+        {onToggle && (
+          <button className="button button--quiet" onClick={onToggle} aria-expanded={isOpen}>
+            {isOpen ? 'Hide' : 'Inspect'}
+          </button>
+        )}
+      </div>
     </article>
   )
 }

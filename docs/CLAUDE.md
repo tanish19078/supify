@@ -39,7 +39,7 @@ link. Drift between documents is worse than a missing document.
 | **Stack** | **Chosen (Eval-1 scope):** Vite + React (JavaScript) + react-router-dom. Fixtures only, no backend/DB. Restricted to course topics through lecture 42. |
 | Database | Deferred. Modelled in `understanding.md` §3, not being built yet. |
 | Backend | Deferred. Frontend builds against a contract + fixtures. |
-| Code | Not started. |
+| Code | Eval-1 scope implemented — Vite + React + react-router-dom, fixtures over HTTP, four consoles, comparison and claim inspector. Backend still deferred. |
 
 Anything stack-dependent is marked `TBD` in the architecture doc. **Do not silently resolve a
 `TBD`.** Raise it.

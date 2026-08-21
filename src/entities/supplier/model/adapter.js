@@ -6,6 +6,14 @@ const methodLabels = {
   site_visit: 'Site visit',
 }
 
+const evidenceKindLabels = {
+  document: 'Document',
+  photo: 'Photo',
+  registry_response: 'Registry check',
+  audit_report: 'Audit report',
+  reference_contact: 'Reference call',
+}
+
 export function toSupplier(wire) {  return {
     id: wire.id,
     legalName: wire.legal_name,
@@ -36,6 +44,12 @@ export function toSupplier(wire) {  return {
       verifiedAt: claim.verified_at,
       validUntil: claim.valid_until,
       evidenceCount: claim.evidence_count,
+      evidence: (claim.evidence || []).map((item) => ({
+        kind: item.kind,
+        kindLabel: evidenceKindLabels[item.kind] || item.kind,
+        label: item.label,
+        issuedOn: item.issued_on,
+      })),
     })),
   }
 }

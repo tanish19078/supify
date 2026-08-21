@@ -21,9 +21,48 @@
       "gates_applied": []
     },
     "claims": [
-      { "key": "gst_registration", "label": "GST registration", "value": "03AAECA9082G1ZP", "state": "verified", "method": "third_party_api", "verified_at": "2026-08-15T09:00:00Z", "valid_until": "2026-11-15T09:00:00Z", "evidence_count": 2 },
-      { "key": "iso_9001", "label": "ISO 9001:2015", "value": "Certificate uploaded", "state": "verified", "method": "document_review", "verified_at": "2026-07-28T09:00:00Z", "valid_until": "2027-03-30T09:00:00Z", "evidence_count": 3 },
-      { "key": "annual_capacity", "label": "Stated production capacity", "value": "80,000 units / month", "state": "under_review", "method": "self_declared", "verified_at": null, "valid_until": null, "evidence_count": 1 }
+      {
+        "key": "gst_registration",
+        "label": "GST registration",
+        "value": "03AAECA9082G1ZP",
+        "state": "verified",
+        "method": "third_party_api",
+        "verified_at": "2026-08-15T09:00:00Z",
+        "valid_until": "2026-11-15T09:00:00Z",
+        "evidence_count": 2,
+        "evidence": [
+          { "kind": "registry_response", "label": "GSTN registry lookup response", "issued_on": "2026-08-15" },
+          { "kind": "document", "label": "GST registration certificate", "issued_on": "2024-03-12" }
+        ]
+      },
+      {
+        "key": "iso_9001",
+        "label": "ISO 9001:2015",
+        "value": "Certificate uploaded",
+        "state": "verified",
+        "method": "document_review",
+        "verified_at": "2026-07-28T09:00:00Z",
+        "valid_until": "2027-03-30T09:00:00Z",
+        "evidence_count": 3,
+        "evidence": [
+          { "kind": "document", "label": "ISO 9001:2015 certificate", "issued_on": "2024-03-30" },
+          { "kind": "document", "label": "Accreditation body scope document", "issued_on": "2024-03-30" },
+          { "kind": "audit_report", "label": "Surveillance audit summary 2026", "issued_on": "2026-06-18" }
+        ]
+      },
+      {
+        "key": "annual_capacity",
+        "label": "Stated production capacity",
+        "value": "80,000 units / month",
+        "state": "under_review",
+        "method": "self_declared",
+        "verified_at": null,
+        "valid_until": null,
+        "evidence_count": 1,
+        "evidence": [
+          { "kind": "document", "label": "Production line throughput statement", "issued_on": "2026-08-01" }
+        ]
+      }
     ]
   },
   {
@@ -48,8 +87,33 @@
       "gates_applied": ["Quality evidence is incomplete"]
     },
     "claims": [
-      { "key": "gst_registration", "label": "GST registration", "value": "24AAXFM9104Q1ZN", "state": "verified", "method": "third_party_api", "verified_at": "2026-07-02T09:00:00Z", "valid_until": "2026-10-02T09:00:00Z", "evidence_count": 2 },
-      { "key": "quality_management", "label": "Quality management process", "value": "Self-declared process", "state": "under_review", "method": "self_declared", "verified_at": null, "valid_until": null, "evidence_count": 1 }
+      {
+        "key": "gst_registration",
+        "label": "GST registration",
+        "value": "24AAXFM9104Q1ZN",
+        "state": "verified",
+        "method": "third_party_api",
+        "verified_at": "2026-07-02T09:00:00Z",
+        "valid_until": "2026-10-02T09:00:00Z",
+        "evidence_count": 2,
+        "evidence": [
+          { "kind": "registry_response", "label": "GSTN registry lookup response", "issued_on": "2026-07-02" },
+          { "kind": "document", "label": "GST registration certificate", "issued_on": "2022-11-05" }
+        ]
+      },
+      {
+        "key": "quality_management",
+        "label": "Quality management process",
+        "value": "Self-declared process",
+        "state": "under_review",
+        "method": "self_declared",
+        "verified_at": null,
+        "valid_until": null,
+        "evidence_count": 1,
+        "evidence": [
+          { "kind": "document", "label": "Internal quality policy draft", "issued_on": "2026-06-20" }
+        ]
+      }
     ]
   },
   {
@@ -74,8 +138,30 @@
       "gates_applied": ["Identity has not been independently established"]
     },
     "claims": [
-      { "key": "gst_registration", "label": "GST registration", "value": "Supplier-submitted identifier", "state": "under_review", "method": "self_declared", "verified_at": null, "valid_until": null, "evidence_count": 1 },
-      { "key": "factory_capacity", "label": "Factory capacity", "value": "On request", "state": "submitted", "method": "self_declared", "verified_at": null, "valid_until": null, "evidence_count": 1 }
+      {
+        "key": "gst_registration",
+        "label": "GST registration",
+        "value": "Supplier-submitted identifier",
+        "state": "under_review",
+        "method": "self_declared",
+        "verified_at": null,
+        "valid_until": null,
+        "evidence_count": 1,
+        "evidence": [
+          { "kind": "document", "label": "Scanned GST acknowledgement", "issued_on": "2026-08-17" }
+        ]
+      },
+      {
+        "key": "factory_capacity",
+        "label": "Factory capacity",
+        "value": "On request",
+        "state": "submitted",
+        "method": "self_declared",
+        "verified_at": null,
+        "valid_until": null,
+        "evidence_count": 0,
+        "evidence": []
+      }
     ]
   },
   {
@@ -100,9 +186,54 @@
       "gates_applied": ["A prior attestation has lapsed"]
     },
     "claims": [
-      { "key": "gst_registration", "label": "GST registration", "value": "27AAECK9371L1ZQ", "state": "verified", "method": "third_party_api", "verified_at": "2026-05-10T09:00:00Z", "valid_until": "2026-08-02T09:00:00Z", "evidence_count": 11 },
-      { "key": "iso_9001", "label": "ISO 9001:2015", "value": "Certificate uploaded", "state": "verified", "method": "document_review", "verified_at": "2026-06-01T09:00:00Z", "valid_until": "2027-06-01T09:00:00Z", "evidence_count": 2 },
-      { "key": "annual_capacity", "label": "Stated production capacity", "value": "120,000 metres / month", "state": "needs_more_info", "method": "self_declared", "verified_at": null, "valid_until": null, "evidence_count": 0 }
+      {
+        "key": "gst_registration",
+        "label": "GST registration",
+        "value": "27AAECK9371L1ZQ",
+        "state": "verified",
+        "method": "third_party_api",
+        "verified_at": "2026-05-10T09:00:00Z",
+        "valid_until": "2026-08-02T09:00:00Z",
+        "evidence_count": 11,
+        "evidence": [
+          { "kind": "registry_response", "label": "GSTN registry lookup response 1", "issued_on": "2026-05-10" },
+          { "kind": "registry_response", "label": "GSTN registry lookup response 2", "issued_on": "2026-02-14" },
+          { "kind": "registry_response", "label": "GSTN registry lookup response 3", "issued_on": "2025-11-09" },
+          { "kind": "registry_response", "label": "GSTN filing status extract", "issued_on": "2026-05-10" },
+          { "kind": "document", "label": "GST registration certificate", "issued_on": "2019-06-21" },
+          { "kind": "document", "label": "Amended registration slip", "issued_on": "2023-01-30" },
+          { "kind": "document", "label": "Address proof of Unit II works", "issued_on": "2023-01-28" },
+          { "kind": "photo", "label": "Unit II premises photograph", "issued_on": "2026-04-11" },
+          { "kind": "reference_contact", "label": "Reference call: upstream mill", "issued_on": "2026-04-12" },
+          { "kind": "reference_contact", "label": "Reference call: logistics partner", "issued_on": "2026-04-19" },
+          { "kind": "audit_report", "label": "Compliance review note", "issued_on": "2026-05-02" }
+        ]
+      },
+      {
+        "key": "iso_9001",
+        "label": "ISO 9001:2015",
+        "value": "Certificate uploaded",
+        "state": "verified",
+        "method": "document_review",
+        "verified_at": "2026-06-01T09:00:00Z",
+        "valid_until": "2027-06-01T09:00:00Z",
+        "evidence_count": 2,
+        "evidence": [
+          { "kind": "document", "label": "ISO 9001:2015 certificate", "issued_on": "2023-06-01" },
+          { "kind": "audit_report", "label": "Certifying body report", "issued_on": "2026-05-28" }
+        ]
+      },
+      {
+        "key": "annual_capacity",
+        "label": "Stated production capacity",
+        "value": "120,000 metres / month",
+        "state": "needs_more_info",
+        "method": "self_declared",
+        "verified_at": null,
+        "valid_until": null,
+        "evidence_count": 0,
+        "evidence": []
+      }
     ]
   },
   {
@@ -127,8 +258,35 @@
       "gates_applied": ["Identity has not been independently established"]
     },
     "claims": [
-      { "key": "gst_registration", "label": "GST registration", "value": "36AADCD1122M1ZR", "state": "submitted", "method": "self_declared", "verified_at": null, "valid_until": null, "evidence_count": 1 },
-      { "key": "quality_management", "label": "Quality management process", "value": "Certificate withdrawn after adverse finding", "state": "revoked", "method": "document_review", "verified_at": "2026-04-02T09:00:00Z", "valid_until": "2026-07-02T09:00:00Z", "evidence_count": 4 }
+      {
+        "key": "gst_registration",
+        "label": "GST registration",
+        "value": "36AADCD1122M1ZR",
+        "state": "submitted",
+        "method": "self_declared",
+        "verified_at": null,
+        "valid_until": null,
+        "evidence_count": 1,
+        "evidence": [
+          { "kind": "document", "label": "GST certificate scan", "issued_on": "2026-08-10" }
+        ]
+      },
+      {
+        "key": "quality_management",
+        "label": "Quality management process",
+        "value": "Certificate withdrawn after adverse finding",
+        "state": "revoked",
+        "method": "document_review",
+        "verified_at": "2026-04-02T09:00:00Z",
+        "valid_until": "2026-07-02T09:00:00Z",
+        "evidence_count": 4,
+        "evidence": [
+          { "kind": "document", "label": "Quality manual submission", "issued_on": "2026-03-20" },
+          { "kind": "document", "label": "Process capability charts", "issued_on": "2026-03-22" },
+          { "kind": "audit_report", "label": "Reviewer findings note", "issued_on": "2026-07-01" },
+          { "kind": "registry_response", "label": "Certification body status check", "issued_on": "2026-07-02" }
+        ]
+      }
     ]
   }
 ]

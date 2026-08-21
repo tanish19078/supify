@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { SupplierCard } from '../../../entities/supplier/ui/SupplierCard'
 import { supplierRepository } from '../../../shared/api/supplierRepository'
@@ -10,9 +10,14 @@ export function SearchScreen() {
   const [suppliers, setSuppliers] = useState(null)
   const [hasError, setHasError] = useState(false)
   const [retryToken, setRetryToken] = useState(0)
+  const searchInputRef = useRef(null)
 
   const query = searchParams.get('q') || ''
   const band = searchParams.get('band') || ''
+
+  useEffect(() => {
+    searchInputRef.current.focus()
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -51,6 +56,7 @@ export function SearchScreen() {
           <label className="sr-only" htmlFor="supplier-search">Search suppliers</label>
           <input
             id="supplier-search"
+            ref={searchInputRef}
             value={query}
             onChange={(event) => updateParams({ q: event.target.value })}
             placeholder="Search fasteners, machining, locations…"

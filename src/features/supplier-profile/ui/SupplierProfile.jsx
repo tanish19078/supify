@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useSearchParams, useParams } from 'react-router-dom'
 import { ClaimRow } from '../../../entities/claim/ui/ClaimRow'
 import { TrustPanel } from '../../../entities/trust/ui/TrustPanel'
 import { supplierRepository } from '../../../shared/api/supplierRepository'
@@ -16,10 +16,20 @@ function readShortlist() {
 
 export function SupplierProfile() {
   const { supplierId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [supplier, setSupplier] = useState(null)
   const [status, setStatus] = useState('loading')
   const [retryToken, setRetryToken] = useState(0)
   const [shortlist, setShortlist] = useState(readShortlist)
+
+  const activeClaimKey = searchParams.get('claim')
+
+  function toggleClaim(claimKey) {
+    const updated = new URLSearchParams(searchParams)
+    if (activeClaimKey === claimKey) updated.delete('claim')
+    else updated.set('claim', claimKey)
+    setSearchParams(updated)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -105,9 +115,21 @@ export function SupplierProfile() {
             <div><span>Minimum order</span><strong>{supplier.moq}</strong></div>
             <div><span>Typical lead time</span><strong>{supplier.leadTime}</strong></div>
           </div>
+          {shortlist.length > 0 && (
+            <Link className="button button--quiet" to={`/compare?ids=${shortlist.join(',')}`}>
+              Compare shortlist ({shortlist.length}) →
+            </Link>
+          )}
           <section className="claims-section">
             <div className="section-heading"><div><p className="eyebrow">Claim ledger</p><h2>What this supplier has asserted</h2></div><span>Method, date, and evidence shown for each claim</span></div>
-            {supplier.claims.map((claim) => <ClaimRow key={claim.key} claim={claim} />)}
+            {supplier.claims.map((claim) => (
+              <ClaimRow
+                key={claim.key}
+                claim={claim}
+                isOpen={activeClaimKey === claim.key}
+                onToggle={() => toggleClaim(claim.key)}
+              />
+            ))}
           </section>
         </div>
         <aside><TrustPanel trust={supplier.trust} /></aside>

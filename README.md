@@ -264,6 +264,78 @@ Supify is designed to help buyers find options they can actually believe.
 
 That difference is the product.
 
+## Current Implementation (Eval-1 scope)
+
+The frontend described above is implemented through lecture-42 course scope:
+Vite + React (JavaScript) + React Router, with no backend or database.
+Data is served as JSON from `public/data/` and fetched over HTTP with simulated
+latency, so every screen exercises real loading, empty, error, and retry states.
+
+### Run it
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # production bundle in dist/
+```
+
+### Route map
+
+| Route | Surface |
+| --- | --- |
+| `/search?q=&band=` | Buyer discovery; filters are URL state and survive reload/back |
+| `/suppliers/:supplierId` | Public profile with claim ledger and trust panel |
+| `/suppliers/:supplierId?claim=:claimKey` | Claim inspector deep link (evidence on record) |
+| `/compare?ids=a,b,c` | Side-by-side comparison set, shareable via URL |
+| `/supplier/onboarding/:step` | Supplier wizard (role-protected), draft persisted locally per step |
+| `/verify/queue?state=` | Verifier work queue (role-protected), state filter in URL |
+| `/verify/tasks/:taskId` | Review workspace with decision panel |
+| anything else | 404 page |
+
+Consoles are protected by role: switch roles with the avatar button in the header
+(buyer → supplier → verifier). Unknown suppliers, tasks, and steps render explicit
+not-found states, never blank screens.
+
+### Where each course concept lives
+
+| Concept | File |
+| --- | --- |
+| Components, JSX, props | every `ui/` component, starting `src/app/App.jsx` |
+| Conditional rendering | loading/error/missing branches in all four feature screens |
+| List rendering with keys | `SearchScreen.jsx`, `VerificationQueue.jsx`, `ComparisonScreen.jsx` |
+| `useState` / lifting state up | onboarding draft lives in `OnboardingScreen.jsx`, passed down via outlet context |
+| Controlled components | search box, onboarding form fields |
+| `useEffect` + cleanup guard | data loading in every screen (`cancelled` flag prevents stale writes) |
+| `useRef` | search input autofocus, `SearchScreen.jsx` |
+| `useMemo` / `useCallback` | comparison selection derived data, `ComparisonScreen.jsx` |
+| Context basics | `src/entities/user/model/UserRoleContext.jsx` |
+| Prop drilling vs context | role reaches header + protected routes via context; shortlist flows via props/URL |
+| React Router: nested routes | onboarding wizard under `/supplier/onboarding` |
+| Dynamic routes + params | `/suppliers/:supplierId`, `/verify/tasks/:taskId`, onboarding `:step` |
+| Protected routes | `src/app/ProtectedRoute.jsx` |
+| 404 page | `src/app/NotFound.jsx` |
+| URL as state | `useSearchParams` in discovery, profile claim inspector, queue filter, comparison set |
+| `fetch` + promises + `async/await` | `src/shared/api/supplierRepository.js` and each screen's loader |
+| Browser storage (localStorage) | onboarding draft, shortlist (`SupplierProfile.jsx`) |
+| Wire → domain mapping at one boundary | `src/entities/supplier/model/adapter.js` |
+
+### Data layer
+
+`src/shared/api/supplierRepository.js` is the only file that touches the network.
+It implements the contract in `src/shared/api/contract.js` against JSON fixtures in
+`public/data/`. When a real API exists, only this one module changes — entities and
+features keep consuming the same mapped domain shapes.
+
+Fixtures are deliberately adversarial: an expired attestation (Kalyani Textiles),
+a revoked claim (Deccan Polymers), a gated self-declared-only supplier (Narmada),
+an eleven-evidence claim, a dual-control review task, and a 90-character legal name.
+
+### Deliberately deferred
+
+Database, backend API, authentication, evidence file storage, trust-ladder home,
+notifications, RFQ/commercial layer. The domain model for these is already settled
+in [docs/understanding.md](docs/understanding.md).
+
 ## Full Rationale
 
 This README is the showpiece. The deeper architectural reasoning lives in [docs/understanding.md](docs/understanding.md).

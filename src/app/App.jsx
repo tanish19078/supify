@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { SearchScreen } from '../features/discovery/ui/SearchScreen'
+import { ComparisonScreen } from '../features/comparison/ui/ComparisonScreen'
 import { SupplierProfile } from '../features/supplier-profile/ui/SupplierProfile'
 import { OnboardingScreen } from '../features/supplier-onboarding/ui/OnboardingScreen'
 import { OnboardingStep } from '../features/supplier-onboarding/ui/OnboardingStep'
@@ -17,6 +18,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/search" replace />} />
         <Route path="/search" element={<SearchScreen />} />
+        <Route path="/compare" element={<ComparisonScreen />} />
         <Route path="/suppliers/:supplierId" element={<SupplierProfile />} />
         <Route path="/supplier/onboarding" element={<ProtectedRoute requiredRole="supplier"><OnboardingScreen /></ProtectedRoute>}>
           <Route index element={<Navigate to="organisation" replace />} />
