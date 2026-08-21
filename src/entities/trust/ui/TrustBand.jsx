@@ -6,7 +6,7 @@ const bandMeta = {
 }
 
 export function TrustBand({ trust, compact = false }) {
-  const meta = bandMeta[trust.band]
+  const meta = bandMeta[trust.band] || { icon: '?', label: trust.band }
   return (
     <div className={`trust-band trust-band--${trust.band} ${compact ? 'trust-band--compact' : ''}`}>
       <span aria-hidden="true">{meta.icon}</span>

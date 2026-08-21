@@ -8,7 +8,7 @@ export function TrustPanel({ trust }) {
           <p className="eyebrow">Trust standing</p>
           <TrustBand trust={trust} />
         </div>
-        <span className="trust-panel__expiry">Valid until {trust.validUntil ? formatDate(trust.validUntil) : 're-verification'}</span>
+        <span className="trust-panel__expiry">{formatValidity(trust.validUntil)}</span>
       </div>
       <div className="pillar-list">
         {trust.pillars.map((pillar) => (
@@ -25,6 +25,9 @@ export function TrustPanel({ trust }) {
   )
 }
 
-function formatDate(value) {
-  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+function formatValidity(value) {
+  if (!value) return 'Until re-verification'
+  const formatter = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  const prefix = new Date(value).getTime() < Date.now() ? 'Expired ' : 'Valid until '
+  return prefix + formatter.format(new Date(value))
 }

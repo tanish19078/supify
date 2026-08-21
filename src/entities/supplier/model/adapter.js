@@ -6,9 +6,7 @@ const methodLabels = {
   site_visit: 'Site visit',
 }
 
-/** Maps API/database wire data to stable UI domain data. */
-export function toSupplier(wire) {
-  return {
+export function toSupplier(wire) {  return {
     id: wire.id,
     legalName: wire.legal_name,
     tradeName: wire.trade_name || wire.legal_name,
@@ -39,5 +37,21 @@ export function toSupplier(wire) {
       validUntil: claim.valid_until,
       evidenceCount: claim.evidence_count,
     })),
+  }
+}
+
+export function toVerificationTask(taskWire, supplierWire) {
+  return {
+    id: taskWire.id,
+    supplierId: taskWire.supplier_id,
+    claimKey: taskWire.claim_key,
+    claimLabel: taskWire.claim_label,
+    state: taskWire.state,
+    priority: taskWire.priority,
+    assignedTo: taskWire.assigned_to,
+    sla: taskWire.sla,
+    evidenceCount: taskWire.evidence_count || 0,
+    requiresDual: taskWire.requires_dual || false,
+    supplier: supplierWire ? toSupplier(supplierWire) : null,
   }
 }

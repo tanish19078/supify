@@ -1,0 +1,7 @@
+[
+  { "id": "VT-1084", "supplier_id": "aravind-fasteners", "claim_key": "annual_capacity", "claim_label": "Stated production capacity", "state": "in_review", "priority": "High", "assigned_to": "You", "sla": "Due in 2h 18m", "evidence_count": 1 },
+  { "id": "VT-1081", "supplier_id": "monarch-industrial", "claim_key": "quality_management", "claim_label": "Quality management process", "state": "awaiting_supplier", "priority": "Normal", "assigned_to": "R. Kapoor", "sla": "Awaiting evidence" },
+  { "id": "VT-1077", "supplier_id": "narmada-fabrication", "claim_key": "gst_registration", "claim_label": "GST registration", "state": "queued", "priority": "High", "assigned_to": "Unassigned", "sla": "Due today", "evidence_count": 1 },
+  { "id": "VT-1090", "supplier_id": "kalyani-textiles", "claim_key": "gst_registration", "claim_label": "GST registration", "state": "in_review", "priority": "Normal", "assigned_to": "R. Kapoor", "sla": "Due tomorrow", "evidence_count": 11, "requires_dual": true },
+  { "id": "VT-1088", "supplier_id": "deccan-polymers", "claim_key": "quality_management", "claim_label": "Quality management process", "state": "escalated", "priority": "High", "assigned_to": "Unassigned", "sla": "Overdue by 2 days", "evidence_count": 4 }
+]

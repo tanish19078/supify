@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom'
 import { TrustBand } from '../../trust/ui/TrustBand'
 
-export function SupplierCard({ supplier, onOpen }) {
+export function SupplierCard({ supplier }) {
   return (
     <article className="supplier-card">
       <div className="supplier-card__header">
@@ -19,7 +20,7 @@ export function SupplierCard({ supplier, onOpen }) {
       </div>
       <div className="supplier-card__footer">
         <span>{supplier.claims.filter((claim) => claim.state === 'verified').length} independently established claims</span>
-        <button className="button button--quiet" onClick={() => onOpen(supplier.id)}>View profile <span aria-hidden="true">→</span></button>
+        <Link className="button button--quiet" to={`/suppliers/${supplier.id}`}>View profile <span aria-hidden="true">→</span></Link>
       </div>
     </article>
   )
