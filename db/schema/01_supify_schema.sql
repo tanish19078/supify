@@ -16,7 +16,7 @@ CREATE TABLE supplier (
     trust_band         VARCHAR(32)  NOT NULL DEFAULT 'UNVERIFIED',
     trust_score        DOUBLE       NOT NULL DEFAULT 0.0,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+);
 
 -- 2. Layer 1: Claims submitted by a supplier
 CREATE TABLE claim (
@@ -29,7 +29,7 @@ CREATE TABLE claim (
     status         VARCHAR(32)  NOT NULL DEFAULT 'SUBMITTED',
     created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (supplier_id) REFERENCES supplier (id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 -- 3. Layer 2: Proof documents attached to a claim
 CREATE TABLE evidence (
@@ -40,7 +40,7 @@ CREATE TABLE evidence (
     storage_ref VARCHAR(500) NOT NULL,
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (claim_id) REFERENCES claim (id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 -- 4. Layer 3: Verifier check record (PASS or FAIL)
 CREATE TABLE verification_check (
@@ -52,7 +52,7 @@ CREATE TABLE verification_check (
     rationale    TEXT         NOT NULL,
     performed_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (claim_id) REFERENCES claim (id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 -- 5. Layer 4: Time-bounded active trust badge
 CREATE TABLE attestation (
@@ -66,4 +66,4 @@ CREATE TABLE attestation (
     issued_by       VARCHAR(150) NOT NULL,
     FOREIGN KEY (claim_id) REFERENCES claim (id) ON DELETE CASCADE,
     FOREIGN KEY (source_check_id) REFERENCES verification_check (id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);

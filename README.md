@@ -12,7 +12,7 @@ It exists because of one problem: a buyer cannot cheaply tell whether a supplier
 
 1. **React Frontend (`src/`)** — interactive SPA powered by Vite, React, React Router, Tailwind CSS, and Zustand using HTTP fixtures in `public/data/*.json` ([Frontend architecture](docs/architecture.md)).
 2. **Java Backend & CLI (`backend/`)** — 15-file pure-Java CLI across 4 packages (`model`, `dao`, `service`, `app`) built around one shared `SupifyPlatform`, implementing the 4-layer verification spine (`Claim -> Evidence -> VerificationCheck -> Attestation`), background `DecayMonitorThread`, Stream search, `FileHelper` CSV & audit log I/O, checked `SupifyException`, and `JdbcSupplierDao` ([Backend architecture](docs/backend-architecture.md)).
-3. **MySQL 8.0 Database & JDBC (`db/`)** — simple 5-table InnoDB schema (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`), sample seed data, and `setup_mysql.bat` ([Database ER & JDBC architecture](docs/database-architecture.md)).
+3. **MySQL 8.0 Database & JDBC (`db/`)** — simple 5-table schema (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`), sample seed data, and `setup_mysql.bat` ([Database ER & JDBC architecture](docs/database-architecture.md)).
 
 | You can... | Where |
 | --- | --- |
@@ -86,7 +86,7 @@ app/                        routing, role context, protected routes, 404
 
 **Frontend Stack:** Vite · React (JavaScript) · React Router 6 · Tailwind CSS · Zustand (HTTP JSON fixtures).  
 **Backend Stack:** Java 17+ (`backend/src/com/supify/`) · 4 packages (`model`, `dao`, `service`, `app`) · Threads · Stream API · File I/O · Checked Exceptions · `JdbcSupplierDao`.  
-**Database Stack:** MySQL 8.0 (`db/`) · 5 basic InnoDB tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) · `mysql-connector-j`.
+**Database Stack:** MySQL 8.0 (`db/`) · 5 basic tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) · `mysql-connector-j`.
 
 Dependencies point downward only. Features never import each other. All shareable state (query, filters, selected claim, comparison set, queue filter) lives in the URL; session state (drafts, shortlist) lives in localStorage.
 

@@ -43,7 +43,7 @@ link. Drift between documents is worse than a missing document.
 | Frontend architecture | Settled — `docs/architecture.md` |
 | **Frontend** | **Implemented:** Vite + React (JavaScript) + react-router-dom, fixtures over HTTP (`public/data/*.json`), four consoles, comparison, and claim inspector. Keep decoupled from `backend/`. |
 | **Backend** | **Implemented:** Pure Java in `backend/src/com/supify/` (15 `.java` files across 4 packages: `model`, `dao`, `service`, `app`) — `Main`, `TestApp`, 4-layer verification spine (`Supplier`, `Claim`, `Evidence`, immutable `VerificationCheck`, time-bounded `Attestation`, `TrustBand`, `VerificationMethod`), shared synchronized `SupifyPlatform` implementing generic `Repository<T, ID>` (Stream search + trust rules + claim/check workflows + sample data), `DecayMonitorThread(platform)` daemon, `FileHelper` (CSV + `audit.log`), checked `SupifyException`, `JdbcSupplierDao` (MySQL CRUD), and `run.bat`/`test.bat`. |
-| **Database** | **Implemented (5-table schema):** Simple MySQL 8.0 schema (`db/schema/01_supify_schema.sql` with 5 InnoDB tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation` matching the 5 Java model classes 1:1), seed data (`db/seeds/01_canonical_suppliers.sql`), and `setup_mysql.bat` in `db/`. |
+| **Database** | **Implemented (5-table schema):** Simple MySQL 8.0 schema (`db/schema/01_supify_schema.sql` with 5 tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation` matching the 5 Java model classes 1:1), seed data (`db/seeds/01_canonical_suppliers.sql`), and `setup_mysql.bat` in `db/`. |
 
 Anything stack-dependent is marked `TBD` in the architecture doc. **Do not silently resolve a
 `TBD`.** Raise it.

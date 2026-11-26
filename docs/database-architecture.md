@@ -4,7 +4,7 @@ Relational database specification for [`db/`](../db/README.md) and [`backend/`](
 
 ---
 
-## 1. Entity–Relationship Diagram (5 Basic InnoDB Tables = 1:1 with Java Models)
+## 1. Entity–Relationship Diagram (5 Basic Tables = 1:1 with Java Models)
 
 Matches [`db/schema/01_supify_schema.sql`](../db/schema/01_supify_schema.sql). Each table corresponds directly to one class in `backend/src/com/supify/model/` (`Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation`).
 

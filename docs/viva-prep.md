@@ -46,4 +46,4 @@ Quick revision notes aligned to the **15-file pure-Java backend** (`backend/src/
 9. **Why use `PreparedStatement` with `?` in `JdbcSupplierDao`?**  
    Treats user values as bound data parameters (`ps.setString`, `ps.setInt`, `ps.setDouble`), blocking SQL injection cleanly. Uses `executeUpdate()` for `INSERT`/`UPDATE`/`DELETE` and `executeQuery()` + `ResultSet` for `SELECT`.
 10. **How is the MySQL database organized?**  
-    5 simple InnoDB tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) in `db/schema/01_supify_schema.sql` seeded by `db/seeds/01_canonical_suppliers.sql`, matching the 5 Java model classes 1:1.
+    5 simple tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) in `db/schema/01_supify_schema.sql` seeded by `db/seeds/01_canonical_suppliers.sql`, matching the 5 Java model classes 1:1.

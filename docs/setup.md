@@ -103,7 +103,7 @@ java -cp "bin;lib\*" com.supify.app.TestApp
 Run **`db\setup_mysql.bat`** (from Explorer or terminal):
 - Detects `mysql.exe`, prompts for MySQL username (default `root`) and password (`-p`).
 - Loads in order:
-  1. `db/schema/01_supify_schema.sql` (recreates `supify` database + 5 basic InnoDB tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation`)
+  1. `db/schema/01_supify_schema.sql` (recreates `supify` database + 5 basic tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation`)
   2. `db/seeds/01_canonical_suppliers.sql` (seeds 5 suppliers, 12 claims, 12 evidence rows, 10 checks, and 10 attestations)
 
 ### Step 2: Stage the MySQL JDBC Driver

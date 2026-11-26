@@ -9,7 +9,7 @@ Simple 5-table relational database matching our 5 Java model classes (`Supplier`
 ```text
 db/
 ├── schema/
-│   └── 01_supify_schema.sql       # Drops/recreates supify DB with 5 InnoDB tables
+│   └── 01_supify_schema.sql       # Drops/recreates supify DB with 5 tables
 ├── seeds/
 │   └── 01_canonical_suppliers.sql # Inserts 5 suppliers, 12 claims, 12 evidence rows, 10 checks, 10 attestations
 ├── migrations/                    # Reserved for future scripts
