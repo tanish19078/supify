@@ -7,8 +7,8 @@ Quick revision notes aligned to the **13-file pure-Java backend** (`backend/src/
 ## 1. Quick Pitch & Live CLI Commands
 
 - **Problem:** A buyer cannot cheaply tell whether a supplier truly holds claimed certifications or if they are still valid today.
-- **4-Layer Spine (no `boolean isVerified` shortcut):** `Claim` (supplier assertion) → `Evidence` (uploaded document) → `VerificationCheck` (`final` immutable PASS/FAIL check) → `Attestation` (time-bounded active badge expiring automatically via `DecayMonitorThread`).
-- **Simple Thread-Safe Architecture:** One shared synchronized `SupifyPlatform` holds Supplier CRUD, verification rules, search/sort, and CSV startup persistence (`data/suppliers.csv`), while `DecayMonitorThread(platform)` runs alongside `Main`.
+- **4-Layer Spine (no `boolean isVerified` shortcut):** `Claim` (supplier assertion) → `Evidence` (uploaded document) → `VerificationCheck` (`final` immutable PASS/FAIL check) → `Attestation` (time-bounded active badge expiring automatically via `ExpiryThread`).
+- **Simple Thread-Safe Architecture:** One shared synchronized `SupifyPlatform` holds Supplier CRUD, verification rules, search/sort, and CSV startup persistence (`data/suppliers.csv`), while `ExpiryThread(platform)` runs alongside `Main`.
 - **Launch Tests:** Run `backend\test.bat` (`TestApp` runs 7 automated checks).
 - **Launch CLI:** Run `backend\run.bat` (`Main` opens Buyer, Supplier, Verifier, and Files & Monitor menus with persistent Supplier Add/Update/Delete and a 30-second live expiry demo on `SUP-1`).
 
@@ -20,7 +20,7 @@ Quick revision notes aligned to the **13-file pure-Java backend** (`backend/src/
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | OOP, Encapsulation, Enums with fields, `final` immutability, `LocalDateTime` & `Duration` |
 | `com.supify.dao` | `FileHelper` | Character File I/O (`FileWriter`/`FileReader` + buffered CSV persistence & append-mode `audit.log`) |
-| `com.supify.service` | `SupifyException`, `SupifyPlatform`, `DecayMonitorThread` | Custom checked exception (`extends Exception`), `HashMap`/`ArrayList`, `synchronized`, `Comparator` lambdas (`search`), Authority Split, Trust Capping, Daemon thread (`extends Thread`, `setDaemon(true)`, `volatile`, `sleep`, `interrupt`) |
+| `com.supify.service` | `SupifyException`, `SupifyPlatform`, `ExpiryThread` | Custom checked exception (`extends Exception`), `HashMap`/`ArrayList`, `synchronized`, `Comparator` lambdas (`search`), Authority Split, Trust Capping, Daemon thread (`extends Thread`, `setDaemon(true)`, `volatile`, `sleep`, `interrupt`) |
 | `com.supify.app` | `Main`, `TestApp` | Interactive CRUD menus (`Scanner`, classic `switch`/`case`), try-with-resources & `finally`, 7-test suite |
 
 ---
@@ -36,7 +36,7 @@ Quick revision notes aligned to the **13-file pure-Java backend** (`backend/src/
 4. **Why does `SupifyPlatform.recalculateTrust()` cap suppliers without `IDENTITY` or `LEGAL`?**  
    No active `IDENTITY` attestation caps the supplier at `UNVERIFIED (<= 0.30)`. Having `IDENTITY` without `LEGAL` caps at `BASIC (<= 0.65)`. Both plus `HUMAN_AUDIT`/`SITE_VISIT` and score `>= 0.85` earns `AUDITED`.
 5. **Difference between `monitor.start()` and `monitor.run()`?**  
-   `start()` creates a separate background thread (`DecayMonitor` with `setDaemon(true)`). Calling `run()` directly runs the infinite loop on `main` and freezes the menu.
+   `start()` creates a separate background thread (`ExpiryThread` with `setDaemon(true)`). Calling `run()` directly runs the infinite loop on `main` and freezes the menu.
 6. **Difference between `volatile` and `synchronized`?**  
    `volatile boolean running` ensures immediate memory visibility for stopping the daemon loop. `synchronized` acquires the `SupifyPlatform` monitor lock so concurrent reads/writes and expiry updates never collide.
 7. **How do search & sorting work in `SupifyPlatform.search()`?**  

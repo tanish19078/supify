@@ -11,7 +11,7 @@ Simple pure-Java console application (**13 `.java` files across 4 packages** + `
 | **OOP, Encapsulation & Enums** | 4-layer entities (`Supplier`, `Claim`, `Evidence`, `final VerificationCheck`, `Attestation`) + enums (`TrustBand`, `VerificationMethod`) | `com.supify.model.*` |
 | **Collections, Comparators & Lambdas** | `HashMap`, `ArrayList`, diamond `<>`, lambda `Comparator` search/sorting & Supplier CRUD | `SupifyPlatform.java` |
 | **Custom Checked Exception** | `SupifyException extends Exception` for validation guards | `SupifyException.java`, `SupifyPlatform.java` |
-| **Multithreading & Synchronization** | Daemon `DecayMonitorThread(platform)` (`sleep`, `interrupt`, `volatile`) sharing `synchronized SupifyPlatform` | `DecayMonitorThread.java`, `SupifyPlatform.java` |
+| **Multithreading & Synchronization** | Daemon `ExpiryThread(platform)` (`sleep`, `interrupt`, `volatile`) sharing `synchronized SupifyPlatform` | `ExpiryThread.java`, `SupifyPlatform.java` |
 | **File I/O (Character Streams)** | Buffered `FileWriter`/`FileReader` automatic CSV startup/save persistence (`data/suppliers.csv`) & append-mode `audit.log` | `FileHelper.java`, `SupifyPlatform.java` |
 | **Interactive CRUD & Automated Tests** | Add/Update/Delete/Switch Supplier + zero-dependency 7-check suite | `Main.java`, `TestApp.java` |
 
@@ -35,7 +35,7 @@ backend/
 │   ├── service/                  # 3 files: exception, shared platform, daemon thread (Member 3)
 │   │   ├── SupifyException.java
 │   │   ├── SupifyPlatform.java
-│   │   └── DecayMonitorThread.java
+│   │   └── ExpiryThread.java
 │   └── app/                      # 2 files: CLI menus + automated tests (Member 4)
 │       ├── Main.java
 │       └── TestApp.java

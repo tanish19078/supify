@@ -8,7 +8,7 @@ Architecture summary for the 13-file pure-Java backend under `backend/src/com/su
 
 ```mermaid
 flowchart TD
-    APP["app (Main, TestApp)"] --> SVC["service (SupifyPlatform, DecayMonitorThread, SupifyException)"]
+    APP["app (Main, TestApp)"] --> SVC["service (SupifyPlatform, ExpiryThread, SupifyException)"]
     APP --> DAO["dao (FileHelper)"]
     APP --> MODEL["model (7 Spine Entities & Enums)"]
 
@@ -21,7 +21,7 @@ flowchart TD
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | 4-layer verification spine & enums |
 | `com.supify.dao` | `FileHelper` | CSV catalog & plain-text `audit.log` File I/O |
-| `com.supify.service` | `SupifyException`, `SupifyPlatform`, `DecayMonitorThread` | Custom checked exception, shared synchronized platform (CRUD, CSV persistence, Comparator search, trust rules), daemon thread |
+| `com.supify.service` | `SupifyException`, `SupifyPlatform`, `ExpiryThread` | Custom checked exception, shared synchronized platform (CRUD, CSV persistence, Comparator search, trust rules), daemon thread |
 | `com.supify.app` | `Main`, `TestApp` | Interactive console menus (with Add/Update/Delete Supplier) and 7 automated checks |
 
 ---
@@ -51,7 +51,7 @@ classDiagram
         +readAuditLog(File)$ List~String~
     }
 
-    class DecayMonitorThread {
+    class ExpiryThread {
         +run() void
         +stopMonitor() void
         +printThreadInfo() void
@@ -62,11 +62,11 @@ classDiagram
         +SupifyException(String message, Throwable cause)
     }
 
-    Thread <|-- DecayMonitorThread
+    Thread <|-- ExpiryThread
     Exception <|-- SupifyException
     SupifyPlatform ..> FileHelper
     SupifyPlatform ..> SupifyException
-    DecayMonitorThread --> SupifyPlatform
+    ExpiryThread --> SupifyPlatform
 ```
 
 ---

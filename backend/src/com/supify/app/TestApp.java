@@ -6,7 +6,7 @@ import com.supify.model.Supplier;
 import com.supify.model.TrustBand;
 import com.supify.model.VerificationCheck;
 import com.supify.model.VerificationMethod;
-import com.supify.service.DecayMonitorThread;
+import com.supify.service.ExpiryThread;
 import com.supify.service.SupifyException;
 import com.supify.service.SupifyPlatform;
 import java.io.File;
@@ -125,7 +125,7 @@ public class TestApp {
         Claim c = platform.submitClaim("SUP-T3", "gst", "GST", "IDENTITY", "24CCC", "GST", "PDF", "gst.pdf");
         platform.verifyClaim(c.getId(), "Verifier", VerificationMethod.DOCUMENT_REVIEW, true, "Verified", 1);
 
-        DecayMonitorThread monitor = new DecayMonitorThread(platform, 200);
+        ExpiryThread monitor = new ExpiryThread(platform, 200);
         boolean isDaemon = monitor.isDaemon();
         monitor.start();
         Thread.sleep(1500);

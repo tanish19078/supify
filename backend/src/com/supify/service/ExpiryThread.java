@@ -1,17 +1,17 @@
 package com.supify.service;
 
 // Background daemon thread checking expired badges on the shared SupifyPlatform
-public class DecayMonitorThread extends Thread {
+public class ExpiryThread extends Thread {
     private final SupifyPlatform platform;
     private final int delayMs;
     private volatile boolean running = true;
 
-    public DecayMonitorThread(SupifyPlatform platform) {
+    public ExpiryThread(SupifyPlatform platform) {
         this(platform, 4000);
     }
 
-    public DecayMonitorThread(SupifyPlatform platform, int delayMs) {
-        super("DecayMonitor");
+    public ExpiryThread(SupifyPlatform platform, int delayMs) {
+        super("ExpiryThread");
         this.platform = platform;
         this.delayMs = delayMs;
         setDaemon(true);

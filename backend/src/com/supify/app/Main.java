@@ -7,7 +7,7 @@ import com.supify.model.Evidence;
 import com.supify.model.Supplier;
 import com.supify.model.VerificationCheck;
 import com.supify.model.VerificationMethod;
-import com.supify.service.DecayMonitorThread;
+import com.supify.service.ExpiryThread;
 import com.supify.service.SupifyException;
 import com.supify.service.SupifyPlatform;
 import java.io.File;
@@ -25,7 +25,7 @@ public class Main {
         SupifyPlatform platform = new SupifyPlatform();
         System.out.println("\n" + platform.loadStartupData(CSV_FILE));
 
-        DecayMonitorThread monitor = new DecayMonitorThread(platform);
+        ExpiryThread monitor = new ExpiryThread(platform);
         monitor.start();
 
         try (Scanner sc = new Scanner(System.in)) {
@@ -307,7 +307,7 @@ public class Main {
         }
     }
 
-    private static void adminMenu(Scanner sc, SupifyPlatform platform, DecayMonitorThread monitor) {
+    private static void adminMenu(Scanner sc, SupifyPlatform platform, ExpiryThread monitor) {
         while (true) {
             showAlerts(platform);
             printHeader("FILES & MONITOR MENU");

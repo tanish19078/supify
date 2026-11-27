@@ -89,7 +89,7 @@ java -cp bin com.supify.app.TestApp
 
 1. Launch `backend\run.bat` (auto-loads `backend/data/suppliers.csv`, or creates 5 sample suppliers on first run).
 2. **Buyer Menu (`[1]`):** List suppliers (`[1]`), search/sort (`[2]`), inspect `SUP-1`'s 4-layer Claim -> Evidence -> VerificationCheck -> Attestation chain (`[3]`), or compare 2 suppliers (`[4]`).
-3. **Supplier Menu (`[2]`):** Switch active supplier (`[1]`), **Add New Supplier** (`[2]`), **Update Active Supplier** (`[3]`), **Delete a Supplier** (`[4]`), submit a claim with PDF evidence (`[5]`), and watch active expiry countdowns (`[6]`, including `SUP-1`'s 30-second badge decaying via `DecayMonitorThread`).
+3. **Supplier Menu (`[2]`):** Switch active supplier (`[1]`), **Add New Supplier** (`[2]`), **Update Active Supplier** (`[3]`), **Delete a Supplier** (`[4]`), submit a claim with PDF evidence (`[5]`), and watch active expiry countdowns (`[6]`, including `SUP-1`'s 30-second badge decaying via `ExpiryThread`).
 4. **Verifier Menu (`[3]`):** View pending claims (`[1]`) and approve/reject a claim (`[2]`) to update trust score and `data/suppliers.csv`.
 5. **Files & Monitor Menu (`[4]`):** View thread status (`[1]`), save & reload CSV (`[2]`), view `audit.log` (`[3]`), or reset back to the 5 default sample suppliers (`[4]`).
 
