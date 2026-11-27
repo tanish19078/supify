@@ -11,8 +11,8 @@ It exists because of one problem: a buyer cannot cheaply tell whether a supplier
 ## What is built right now
 
 1. **React Frontend (`src/`)** — interactive SPA powered by Vite, React, React Router, Tailwind CSS, and Zustand using HTTP fixtures in `public/data/*.json` ([Frontend architecture](docs/architecture.md)).
-2. **Java Backend & CLI (`backend/`)** — 15-file pure-Java CLI across 4 packages (`model`, `dao`, `service`, `app`) built around one shared `SupifyPlatform`, implementing the 4-layer verification spine (`Claim -> Evidence -> VerificationCheck -> Attestation`), background `DecayMonitorThread`, Stream search, `FileHelper` CSV & audit log I/O, checked `SupifyException`, and `JdbcSupplierDao` ([Backend architecture](docs/backend-architecture.md)).
-3. **MySQL 8.0 Database & JDBC (`db/`)** — simple 5-table InnoDB schema (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`), sample seed data, and `setup_mysql.bat` ([Database ER & JDBC architecture](docs/database-architecture.md)).
+2. **Java Backend & CLI (`backend/`)** — 13-file pure-Java CLI across 4 packages (`model`, `dao`, `service`, `app`) built around one shared `SupifyPlatform`, implementing Supplier CRUD with `data/suppliers.csv` persistence, the 4-layer verification spine (`Claim -> Evidence -> VerificationCheck -> Attestation`), background `ExpiryThread`, Comparator search & sort, `FileHelper` CSV & audit log I/O, and checked `SupifyException` ([Backend architecture](docs/backend-architecture.md)).
+3. **MySQL 8.0 Database (`db/`)** — simple 5-table schema (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`), sample seed data, and `setup_mysql.bat` ([Database ER architecture](docs/database-architecture.md)).
 
 | You can... | Where |
 | --- | --- |
@@ -50,8 +50,8 @@ Open http://localhost:5173. Build for production with `npm run build`.
 
 The pure-Java backend CLI (`backend/src/com/supify/`) runs with zero external JARs using `SupifyPlatform` and `loadSampleData()`:
 
-- **Launch interactive CLI (`backend\run.bat`):** Compiles into `backend\bin\` and runs `com.supify.app.Main` (`-cp "bin;lib\*"`) with four menus (**Buyer**, **Supplier**, **Verifier**, **Admin**) plus live 30-second expiry updates.
-- **Run tests (`backend\test.bat`):** Executes `com.supify.app.TestApp` (8 checks covering generic repository, Stream search, 4-layer spine & capping, `DecayMonitorThread`, File I/O, checked `SupifyException`, and JDBC check).
+- **Launch interactive CLI (`backend\run.bat`):** Compiles into `backend\bin\` and runs `com.supify.app.Main` (`-cp bin`) with four menus (**Buyer**, **Supplier**, **Verifier**, **Files & Monitor**), persistent Supplier CRUD (`data/suppliers.csv`), and live 30-second expiry updates.
+- **Run tests (`backend\test.bat`):** Executes `com.supify.app.TestApp` (7 checks covering Supplier CRUD & CSV restart persistence, Comparator search/sorting, 4-layer spine & capping, `ExpiryThread`, File I/O, and checked `SupifyException`).
 
 ```bat
 cd backend
@@ -85,8 +85,8 @@ app/                        routing, role context, protected routes, 404
 ```
 
 **Frontend Stack:** Vite · React (JavaScript) · React Router 6 · Tailwind CSS · Zustand (HTTP JSON fixtures).  
-**Backend Stack:** Java 17+ (`backend/src/com/supify/`) · 4 packages (`model`, `dao`, `service`, `app`) · Threads · Stream API · File I/O · Checked Exceptions · `JdbcSupplierDao`.  
-**Database Stack:** MySQL 8.0 (`db/`) · 5 basic InnoDB tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) · `mysql-connector-j`.
+**Backend Stack:** Java 17+ (`backend/src/com/supify/`) · 4 packages (`model`, `dao`, `service`, `app`) · Threads · Comparator & Lambdas · File I/O · Checked Exceptions.  
+**Database Stack:** MySQL 8.0 (`db/`) · 5 basic tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`).
 
 Dependencies point downward only. Features never import each other. All shareable state (query, filters, selected claim, comparison set, queue filter) lives in the URL; session state (drafts, shortlist) lives in localStorage.
 
@@ -115,11 +115,11 @@ These come from the design docs and are visible in the running app:
 ## Documentation
 
 - [`AGENTS.md`](AGENTS.md) — working rules, invariants, layer structure, and project status
-- [`docs/setup.md`](docs/setup.md) — local setup, batch runners, and MySQL/JDBC instructions
+- [`docs/setup.md`](docs/setup.md) — local setup, batch runners, and MySQL instructions
 - [`docs/understanding.md`](docs/understanding.md) — problem framing, design axioms, domain and trust model
 - [`docs/architecture.md`](docs/architecture.md) — frontend architecture: layers, state, contracts
 - [`docs/backend-architecture.md`](docs/backend-architecture.md) — Java 4-package layout and class diagrams
-- [`docs/database-architecture.md`](docs/database-architecture.md) — MySQL 8.0 5-table ER diagram and JDBC flow
+- [`docs/database-architecture.md`](docs/database-architecture.md) — MySQL 8.0 5-table ER diagram and schema overview
 - [`backend/README.md`](backend/README.md) — Java backend compilation, `.bat` runners, and CLI flows
 - [`db/README.md`](db/README.md) — MySQL 5-table schema, seed data, and `setup_mysql.bat`
 - [`docs/contract/supplier-api.md`](docs/contract/supplier-api.md) — the data contract the fixtures satisfy
@@ -127,5 +127,5 @@ These come from the design docs and are visible in the running app:
 ## Status
 
 - **Frontend:** Routing, Context/reducer state, Zustand dashboard, validated forms, and async workspace recovery flows running on HTTP fixtures.
-- **Backend CLI:** 15-file pure-Java CLI across 4 packages (`model`, `dao`, `service`, `app`), `TestApp`, and `run.bat`/`test.bat` implemented in `backend/`.
-- **Database & JDBC:** Simple 5-table MySQL 8.0 schema, seed inserts, `setup_mysql.bat`, and CRUD `JdbcSupplierDao` implemented.
+- **Backend CLI:** 13-file pure-Java CLI across 4 packages (`model`, `dao`, `service`, `app`), `TestApp`, and `run.bat`/`test.bat` implemented in `backend/`.
+- **Database:** Simple 5-table MySQL 8.0 schema, seed inserts, and `setup_mysql.bat` implemented in `db/`.

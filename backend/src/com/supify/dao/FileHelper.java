@@ -5,6 +5,8 @@ import com.supify.model.TrustBand;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -95,6 +97,23 @@ public class FileHelper {
             }
         }
         return lines;
+    }
+
+    // Copies a real proof file (e.g. PDF/image) into data/proofs/ using byte streams
+    public static File copyProofFile(File sourceFile, File destDir) throws IOException {
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+        File target = new File(destDir, sourceFile.getName());
+        try (FileInputStream in = new FileInputStream(sourceFile);
+             FileOutputStream out = new FileOutputStream(target)) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+        return target;
     }
 
     private static void ensureParentDir(File file) {

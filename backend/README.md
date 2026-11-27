@@ -1,20 +1,19 @@
 # Supify — Java Backend & CLI
 
-Clean pure-Java console application (**4 packages**: `model`, `dao`, `service`, `app` + `run.bat`).
+Simple pure-Java console application (**13 `.java` files across 4 packages** + `run.bat` & `test.bat`), organized cleanly for a 4-member project.
 
 ---
 
-## 1. Technical Implementation Map
+## 1. Core Java Concepts Covered
 
 | Capability | Implementation | File(s) |
 | :--- | :--- | :--- |
-| **OOP, Encapsulation & Enums** | 4-layer spine (`Supplier`, `Claim`, `Evidence`, `final VerificationCheck`, `Attestation`) + enums (`TrustBand`, `VerificationMethod`) | `com.supify.model.*` |
-| **Generics & Collections** | Generic `Repository<T, ID>`, `HashMap`, `ArrayList`, `<>` diamond, `Collections.sort` | `Repository.java`, `SupifyPlatform.java` |
-| **Lambda Expressions & Streams** | `.stream().filter(...).sorted(getComparator(sortBy)).collect(Collectors.toList())` search & comparator lambdas | `SupifyPlatform.java`, `Main.java` |
-| **Custom Checked Exception** | `SupifyException extends Exception` for supplier/verifier validation guards | `SupifyException.java`, `SupifyPlatform.java` |
-| **Multithreading & Synchronization** | Daemon `DecayMonitorThread(platform)` (`setDaemon(true)`, `volatile`, `sleep`, `interrupt`) sharing `synchronized SupifyPlatform` | `DecayMonitorThread.java`, `SupifyPlatform.java` |
-| **File I/O (Character Streams)** | Buffered `FileWriter`/`FileReader` CSV catalog export/import (`data/suppliers.csv`) & append-mode `data/audit.log` | `FileHelper.java` |
-| **JDBC & MySQL CRUD** | `Class.forName`, `DriverManager`, `PreparedStatement`, `executeQuery`/`executeUpdate`, `ResultSet` `mapRow` | `JdbcSupplierDao.java` |
+| **OOP, Encapsulation & Enums** | 4-layer entities (`Supplier`, `Claim`, `Evidence`, `final VerificationCheck`, `Attestation`) + enums (`TrustBand`, `VerificationMethod`) | `com.supify.model.*` |
+| **Collections, Comparators & Lambdas** | `HashMap`, `ArrayList`, diamond `<>`, lambda `Comparator` search/sorting & Supplier CRUD | `SupifyPlatform.java` |
+| **Custom Checked Exception** | `SupifyException extends Exception` for validation guards | `SupifyException.java`, `SupifyPlatform.java` |
+| **Multithreading & Synchronization** | Daemon `ExpiryThread(platform)` (`sleep`, `interrupt`, `volatile`) sharing `synchronized SupifyPlatform` | `ExpiryThread.java`, `SupifyPlatform.java` |
+| **File I/O (Character & Byte Streams)** | Buffered `FileWriter`/`FileReader` automatic CSV persistence (`data/suppliers.csv`), `FileInputStream`/`FileOutputStream` proof file copy (`data/proofs/`), & append-mode `audit.log` | `FileHelper.java`, `SupifyPlatform.java` |
+| **Interactive CRUD & Automated Tests** | Add/Update/Delete/Switch Supplier + zero-dependency 7-check suite | `Main.java`, `TestApp.java` |
 
 ---
 
@@ -23,7 +22,7 @@ Clean pure-Java console application (**4 packages**: `model`, `dao`, `service`, 
 ```text
 backend/
 ├── src/com/supify/
-│   ├── model/                    # 7 files: 4-layer spine entities + enums
+│   ├── model/                    # 7 files: 4-layer spine entities + enums (Member 1)
 │   │   ├── TrustBand.java
 │   │   ├── VerificationMethod.java
 │   │   ├── Supplier.java
@@ -31,19 +30,19 @@ backend/
 │   │   ├── Evidence.java
 │   │   ├── VerificationCheck.java
 │   │   └── Attestation.java
-│   ├── dao/                      # 3 files: generic repo, File I/O & JDBC
-│   │   ├── Repository.java
-│   │   ├── FileHelper.java
-│   │   └── JdbcSupplierDao.java
-│   ├── service/                  # 3 files: exception, shared platform, daemon thread
+│   ├── dao/                      # 1 file: CSV, proof copy & audit log File I/O (Member 2)
+│   │   └── FileHelper.java
+│   ├── service/                  # 3 files: exception, shared platform, daemon thread (Member 3)
 │   │   ├── SupifyException.java
 │   │   ├── SupifyPlatform.java
-│   │   └── DecayMonitorThread.java
-│   └── app/                      # CLI entry point
-│       └── Main.java
+│   │   └── ExpiryThread.java
+│   └── app/                      # 2 files: CLI menus + automated tests (Member 4)
+│       ├── Main.java
+│       └── TestApp.java
 ├── bin/                          # Compiled .class files (gitignored)
-├── lib/                          # mysql-connector-j-*.jar
+├── data/                         # Persistent suppliers.csv, proofs/, and audit.log (gitignored)
 ├── run.bat                       # Compile & run Main
+├── test.bat                      # Compile & run TestApp
 └── README.md
 ```
 
@@ -51,24 +50,26 @@ backend/
 
 ## 3. Compile & Run
 
-### Windows Batch Script
+### Windows Batch Scripts
 Inside `backend\`:
-- Run **`run.bat`** to compile and open the interactive CLI (`Buyer`, `Supplier`, `Verifier`, `Admin` menus).
+- Run **`run.bat`** to compile and open the interactive CLI (`Buyer`, `Supplier`, `Verifier`, `Files & Monitor` menus).
+- Run **`test.bat`** to compile and run the 7-check test suite (`TestApp`).
 
 ### Manual Commands
 ```bat
 cd backend
 if exist bin rd /s /q bin
 mkdir bin
-javac -d bin -sourcepath src src\com\supify\app\Main.java src\com\supify\dao\JdbcSupplierDao.java
-java -cp "bin;lib\*" com.supify.app.Main
+javac -d bin -sourcepath src src\com\supify\app\Main.java src\com\supify\app\TestApp.java
+java -cp bin com.supify.app.Main
+java -cp bin com.supify.app.TestApp
 ```
 
 ---
 
 ## 4. Interactive CLI Menus (`Main.java`)
 
-- **`[1] Buyer Menu`:** `[1]` List Suppliers · `[2]` Search & Sort Suppliers (by Trust Score, Capacity, or Name) · `[3]` Inspect Supplier Claims (4-layer `Claim → Evidence → Check → Attestation`) · `[4]` Compare 2 Suppliers
-- **`[2] Supplier Menu (SUP-1)`:** `[1]` My Standing · `[2]` Submit Claim + Evidence (creates `SUBMITTED` claim only) · `[3]` Active Expiry Timers (watch `SUP-1`'s 30-second attestation count down)
-- **`[3] Verifier Menu`:** `[1]` Pending Claims · `[2]` Approve / Reject Claim (creates immutable `VerificationCheck`, issues `Attestation` on PASS, recalculates `TrustBand`)
-- **`[4] Admin Menu`:** `[1]` Thread Status (`main` + `DecayMonitor` daemon) · `[2]` CSV Export / Import (`data/suppliers.csv`) · `[3]` Audit Log (`data/audit.log` append-mode) · `[4]` MySQL JDBC Status (`url`, driver loaded, live connection check)
+- **`[1] Buyer Menu`:** `[1]` List All Suppliers · `[2]` Search & Sort Suppliers (Score, Capacity, or Name) · `[3]` Inspect Supplier & Claims (4-layer `Claim → Evidence → Check → Attestation`) · `[4]` Compare Two Suppliers
+- **`[2] Supplier Menu`:** `[1]` Switch Active Supplier · `[2]` Add New Supplier · `[3]` Update Active Supplier · `[4]` Delete a Supplier · `[5]` Submit Claim + Proof Document (optional real local file path copied into `data/proofs/`) · `[6]` View Active Expiry Timers
+- **`[3] Verifier Menu`:** `[1]` View Pending Claims · `[2]` Approve or Reject Claim (creates immutable `VerificationCheck`, issues `Attestation` on PASS, recalculates `TrustBand`, saves CSV)
+- **`[4] Files & Monitor Menu`:** `[1]` Background Thread Status (`main` + `ExpiryThread` daemon) · `[2]` Save & Reload CSV Now (`data/suppliers.csv`) · `[3]` View Audit Log (`data/audit.log`) · `[4]` Reset to 5 Default Sample Suppliers

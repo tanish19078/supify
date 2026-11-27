@@ -25,8 +25,8 @@ scope-control test for the whole project.
 | `docs/understanding.md` | Problem framing, design axioms, domain model, trust model, lifecycles | Before any design or modelling decision |
 | `docs/architecture.md` | Frontend architecture: layers, state, contracts, components | Before writing frontend code |
 | `docs/backend-architecture.md` | Backend package layers, UML class diagrams, sequence/concurrency/I/O flows | Before writing or extending Java backend code |
-| `docs/database-architecture.md` | MySQL 8.0 ER diagram, JDBC execution flow, and axiom-to-schema mapping | Before modifying SQL or JDBC DAOs |
-| `backend/README.md` | Java CLI setup, Windows batch runner (`run.bat`), package layout & CLI flows | Compiling or running `backend/` |
+| `docs/database-architecture.md` | MySQL 8.0 ER diagram, 5-table schema flow, and axiom-to-schema mapping | Before modifying SQL schemas or seeds |
+| `backend/README.md` | Java CLI setup, Windows batch runners (`run.bat`/`test.bat`), package layout & CLI flows | Compiling, running, or testing `backend/` |
 | `db/README.md` | MySQL 5-table schema, sample seeds, `setup_mysql.bat`, and verification queries | Initializing or administering MySQL in `db/` |
 
 **Do not duplicate content between these.** If a rule needs to change, change it in one place and
@@ -42,8 +42,8 @@ link. Drift between documents is worse than a missing document.
 | Domain & trust model | Settled — `docs/understanding.md` §3–§5 |
 | Frontend architecture | Settled — `docs/architecture.md` |
 | **Frontend** | **Implemented:** Vite + React (JavaScript) + react-router-dom, fixtures over HTTP (`public/data/*.json`), four consoles, comparison, and claim inspector. Keep decoupled from `backend/`. |
-| **Backend** | **Implemented:** Pure Java in `backend/src/com/supify/` (4 packages: `model`, `dao`, `service`, `app`) — `Main`, 4-layer verification spine (`Supplier`, `Claim`, `Evidence`, immutable `VerificationCheck`, time-bounded `Attestation`, `TrustBand`, `VerificationMethod`), shared synchronized `SupifyPlatform` implementing generic `Repository<T, ID>` (Stream search + trust rules + claim/check workflows + sample data), `DecayMonitorThread(platform)` daemon, `FileHelper` (CSV + `audit.log`), checked `SupifyException`, `JdbcSupplierDao` (MySQL CRUD), and `run.bat`. |
-| **Database** | **Implemented (5-table schema):** Simple MySQL 8.0 schema (`db/schema/01_supify_schema.sql` with 5 InnoDB tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation` matching the 5 Java model classes 1:1), seed data (`db/seeds/01_canonical_suppliers.sql`), and `setup_mysql.bat` in `db/`. |
+| **Backend** | **Implemented:** Pure Java in `backend/src/com/supify/` (13 `.java` files across 4 packages: `model`, `dao`, `service`, `app`) — `Main`, `TestApp`, 4-layer verification spine (`Supplier`, `Claim`, `Evidence`, immutable `VerificationCheck`, time-bounded `Attestation`, `TrustBand`, `VerificationMethod`), shared synchronized `SupifyPlatform` (Supplier CRUD, CSV startup load/reset persistence, Comparator search, trust rules, claim/check workflows, sample data), `ExpiryThread(platform)` daemon, `FileHelper` (CSV + proof copy + `audit.log`), checked `SupifyException`, and `run.bat`/`test.bat`. |
+| **Database** | **Implemented (5-table schema):** Simple MySQL 8.0 schema (`db/schema/01_supify_schema.sql` with 5 tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation` matching the 5 Java model classes 1:1), seed data (`db/seeds/01_canonical_suppliers.sql`), and `setup_mysql.bat` in `db/`. |
 
 Anything stack-dependent is marked `TBD` in the architecture doc. **Do not silently resolve a
 `TBD`.** Raise it.

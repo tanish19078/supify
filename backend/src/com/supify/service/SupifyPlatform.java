@@ -1,6 +1,6 @@
 package com.supify.service;
 
-import com.supify.dao.Repository;
+import com.supify.dao.FileHelper;
 import com.supify.model.Attestation;
 import com.supify.model.Claim;
 import com.supify.model.Evidence;
@@ -8,16 +8,17 @@ import com.supify.model.Supplier;
 import com.supify.model.TrustBand;
 import com.supify.model.VerificationCheck;
 import com.supify.model.VerificationMethod;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 // Shared platform holding suppliers, 4-layer verification records, search, and trust rules
-public class SupifyPlatform implements Repository<Supplier, String> {
+public class SupifyPlatform {
     private final Map<String, Supplier> suppliers = new HashMap<>();
     private final Map<String, Claim> claims = new HashMap<>();
     private final List<Evidence> evidences = new ArrayList<>();
@@ -25,36 +26,193 @@ public class SupifyPlatform implements Repository<Supplier, String> {
     private final Map<String, Attestation> attestations = new HashMap<>();
     private final List<String> alerts = new ArrayList<>();
     private int idCounter = 100;
+    private int supplierCounter = 5;
 
     public synchronized String nextId(String prefix) {
         idCounter++;
         return prefix + "-" + idCounter;
     }
 
-    @Override
+    public synchronized String nextSupplierId() {
+        supplierCounter++;
+        return "SUP-" + supplierCounter;
+    }
+
     public synchronized Supplier save(Supplier supplier) {
         suppliers.put(supplier.getId(), supplier);
+        if (supplier.getId() != null && supplier.getId().startsWith("SUP-")) {
+            try {
+                int num = Integer.parseInt(supplier.getId().substring(4));
+                if (num > supplierCounter) {
+                    supplierCounter = num;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
         return supplier;
     }
 
-    @Override
     public synchronized Supplier findById(String id) {
         return suppliers.get(id);
     }
 
-    @Override
     public synchronized List<Supplier> findAll() {
         return new ArrayList<>(suppliers.values());
     }
 
-    @Override
-    public synchronized boolean deleteById(String id) {
-        return suppliers.remove(id) != null;
-    }
-
-    @Override
     public synchronized long count() {
         return suppliers.size();
+    }
+
+    // Supplier CRUD methods (add, update, delete)
+    public synchronized Supplier addSupplier(String name, String city, String category,
+                                             int capacityPerMonth, int moq, String leadTime) throws SupifyException {
+        if (name == null || name.trim().isEmpty()) {
+            throw new SupifyException("Supplier name cannot be empty.");
+        }
+        if (city == null || city.trim().isEmpty()) {
+            throw new SupifyException("City cannot be empty.");
+        }
+        if (category == null || category.trim().isEmpty()) {
+            throw new SupifyException("Category cannot be empty.");
+        }
+        if (capacityPerMonth <= 0) {
+            throw new SupifyException("Monthly capacity must be greater than 0.");
+        }
+        if (moq <= 0) {
+            throw new SupifyException("MOQ must be greater than 0.");
+        }
+
+        String cleanLead = (leadTime == null || leadTime.trim().isEmpty()) ? "14 days" : leadTime.trim();
+        Supplier supplier = new Supplier(
+                nextSupplierId(), name.trim(), city.trim(), category.trim(),
+                capacityPerMonth, moq, cleanLead);
+        return save(supplier);
+    }
+
+    public synchronized Supplier updateSupplier(String id, String name, String city, String category,
+                                                int capacityPerMonth, int moq, String leadTime) throws SupifyException {
+        Supplier s = suppliers.get(id);
+        if (s == null) {
+            throw new SupifyException("Supplier not found: " + id);
+        }
+        if (name != null && !name.trim().isEmpty()) {
+            s.setName(name.trim());
+        }
+        if (city != null && !city.trim().isEmpty()) {
+            s.setCity(city.trim());
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            s.setCategory(category.trim());
+        }
+        if (capacityPerMonth > 0) {
+            s.setCapacityPerMonth(capacityPerMonth);
+        }
+        if (moq > 0) {
+            s.setMoq(moq);
+        }
+        if (leadTime != null && !leadTime.trim().isEmpty()) {
+            s.setLeadTime(leadTime.trim());
+        }
+        return s;
+    }
+
+    public synchronized boolean deleteSupplier(String id) {
+        if (suppliers.remove(id) == null) {
+            return false;
+        }
+
+        List<String> deadClaimIds = new ArrayList<>();
+        for (Claim c : claims.values()) {
+            if (c.getSupplierId().equals(id)) {
+                deadClaimIds.add(c.getId());
+            }
+        }
+        for (String claimId : deadClaimIds) {
+            claims.remove(claimId);
+        }
+        for (int i = evidences.size() - 1; i >= 0; i--) {
+            if (deadClaimIds.contains(evidences.get(i).getClaimId())) {
+                evidences.remove(i);
+            }
+        }
+        for (int i = checks.size() - 1; i >= 0; i--) {
+            if (deadClaimIds.contains(checks.get(i).getClaimId())) {
+                checks.remove(i);
+            }
+        }
+
+        List<String> deadAttIds = new ArrayList<>();
+        for (Attestation a : attestations.values()) {
+            if (deadClaimIds.contains(a.getClaimId())) {
+                deadAttIds.add(a.getId());
+            }
+        }
+        for (String attId : deadAttIds) {
+            attestations.remove(attId);
+        }
+        return true;
+    }
+
+    // Loads saved CSV suppliers on startup (or seeds sample data on first run)
+    public synchronized String loadStartupData(File csvFile) {
+        if (csvFile == null || !csvFile.exists()) {
+            loadSampleData();
+            if (csvFile != null) {
+                try {
+                    FileHelper.exportToCsv(csvFile, findAll());
+                } catch (IOException ignored) {
+                }
+            }
+            return "Loaded " + count() + " sample suppliers (new catalog created).";
+        }
+
+        try {
+            List<Supplier> saved = FileHelper.importFromCsv(csvFile);
+            loadSampleData();
+
+            List<String> savedIds = new ArrayList<>();
+            for (Supplier s : saved) {
+                savedIds.add(s.getId());
+            }
+
+            for (Supplier existing : findAll()) {
+                if (!savedIds.contains(existing.getId())) {
+                    deleteSupplier(existing.getId());
+                }
+            }
+
+            for (Supplier s : saved) {
+                save(s);
+                if (!getClaimsForSupplier(s.getId()).isEmpty()) {
+                    recalculateTrust(s.getId());
+                }
+            }
+            return "Loaded " + count() + " suppliers from " + csvFile.getPath() + ".";
+        } catch (IOException e) {
+            loadSampleData();
+            return "CSV read failed (" + e.getMessage() + "). Loaded " + count() + " sample suppliers.";
+        }
+    }
+
+    // Resets memory and CSV back to the 5 default sample suppliers
+    public synchronized void resetToSampleData(File csvFile) {
+        suppliers.clear();
+        claims.clear();
+        evidences.clear();
+        checks.clear();
+        attestations.clear();
+        alerts.clear();
+        idCounter = 100;
+        supplierCounter = 5;
+
+        loadSampleData();
+        if (csvFile != null) {
+            try {
+                FileHelper.exportToCsv(csvFile, findAll());
+            } catch (IOException ignored) {
+            }
+        }
     }
 
     public synchronized List<Claim> getClaimsForSupplier(String supplierId) {
@@ -147,18 +305,24 @@ public class SupifyPlatform implements Repository<Supplier, String> {
         }
     }
 
-    // Searches and sorts suppliers using a Java Stream and lambdas
+    // Searches and sorts suppliers using a loop and lambda Comparator
     public List<Supplier> search(String keyword, TrustBand minBand, String sortBy) {
         String q = (keyword == null) ? "" : keyword.trim().toLowerCase();
+        List<Supplier> result = new ArrayList<>();
 
-        return findAll().stream()
-                .filter(s -> q.isEmpty()
-                        || s.getName().toLowerCase().contains(q)
-                        || s.getCity().toLowerCase().contains(q)
-                        || s.getCategory().toLowerCase().contains(q))
-                .filter(s -> minBand == null || s.getTrustBand().getLevel() >= minBand.getLevel())
-                .sorted(getComparator(sortBy))
-                .collect(Collectors.toList());
+        for (Supplier s : findAll()) {
+            boolean matchesKeyword = q.isEmpty()
+                    || s.getName().toLowerCase().contains(q)
+                    || s.getCity().toLowerCase().contains(q)
+                    || s.getCategory().toLowerCase().contains(q);
+            boolean matchesBand = minBand == null || s.getTrustBand().getLevel() >= minBand.getLevel();
+            if (matchesKeyword && matchesBand) {
+                result.add(s);
+            }
+        }
+
+        result.sort(getComparator(sortBy));
+        return result;
     }
 
     public List<String> getAllCategories() {
