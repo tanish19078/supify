@@ -1,6 +1,6 @@
 # Supify — Java Backend Architecture
 
-Architecture summary for the 14-file pure-Java backend under `backend/src/com/supify/` (**4 packages**: `model`, `dao`, `service`, `app`).
+Architecture summary for the 13-file pure-Java backend under `backend/src/com/supify/` (**4 packages**: `model`, `dao`, `service`, `app`) — organized simply for a 4-member project.
 
 ---
 
@@ -9,7 +9,7 @@ Architecture summary for the 14-file pure-Java backend under `backend/src/com/su
 ```mermaid
 flowchart TD
     APP["app (Main, TestApp)"] --> SVC["service (SupifyPlatform, DecayMonitorThread, SupifyException)"]
-    APP --> DAO["dao (Repository, FileHelper)"]
+    APP --> DAO["dao (FileHelper)"]
     APP --> MODEL["model (7 Spine Entities & Enums)"]
 
     SVC --> DAO
@@ -20,9 +20,9 @@ flowchart TD
 | Package | Files | Role |
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | 4-layer verification spine & enums |
-| `com.supify.dao` | `Repository<T, ID>`, `FileHelper` | Generic CRUD contract, CSV/log File I/O |
-| `com.supify.service` | `SupifyException`, `SupifyPlatform`, `DecayMonitorThread` | Custom checked exception, shared synchronized platform (storage, Stream search, trust rules), daemon thread |
-| `com.supify.app` | `Main`, `TestApp` | Interactive console menus and 7 automated checks |
+| `com.supify.dao` | `FileHelper` | CSV catalog & plain-text `audit.log` File I/O |
+| `com.supify.service` | `SupifyException`, `SupifyPlatform`, `DecayMonitorThread` | Custom checked exception, shared synchronized platform (CRUD, CSV persistence, Comparator search, trust rules), daemon thread |
+| `com.supify.app` | `Main`, `TestApp` | Interactive console menus (with Add/Update/Delete Supplier) and 7 automated checks |
 
 ---
 
@@ -30,17 +30,12 @@ flowchart TD
 
 ```mermaid
 classDiagram
-    class Repository~T,ID~ {
-        <<interface>>
-        +save(T item) T
-        +findById(ID id) T
-        +findAll() List~T~
-        +deleteById(ID id) boolean
-        +count() long
-    }
-
     class SupifyPlatform {
-        +loadSampleData() void
+        +loadStartupData(File) String
+        +resetToSampleData(File) void
+        +addSupplier(...) Supplier
+        +updateSupplier(...) Supplier
+        +deleteSupplier(String id) boolean
         +search(String keyword, TrustBand minBand, String sortBy) List~Supplier~
         +submitClaim(...) Claim
         +verifyClaim(...) VerificationCheck
@@ -67,9 +62,9 @@ classDiagram
         +SupifyException(String message, Throwable cause)
     }
 
-    Repository <|.. SupifyPlatform
     Thread <|-- DecayMonitorThread
     Exception <|-- SupifyException
+    SupifyPlatform ..> FileHelper
     SupifyPlatform ..> SupifyException
     DecayMonitorThread --> SupifyPlatform
 ```

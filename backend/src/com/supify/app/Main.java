@@ -16,12 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-// Main entry point and console menus for Supify
+// Main entry point and user-friendly console menus for Supify
 public class Main {
+    private static final File CSV_FILE = new File("data/suppliers.csv");
+    private static final File LOG_FILE = new File("data/audit.log");
 
     public static void main(String[] args) {
         SupifyPlatform platform = new SupifyPlatform();
-        platform.loadSampleData();
+        System.out.println("\n" + platform.loadStartupData(CSV_FILE));
 
         DecayMonitorThread monitor = new DecayMonitorThread(platform);
         monitor.start();
@@ -30,12 +32,12 @@ public class Main {
             boolean running = true;
             while (running) {
                 showAlerts(platform);
-                printHeader("SUPIFY :: Supplier Verification CLI");
-                System.out.println("  [1] Buyer Menu");
-                System.out.println("  [2] Supplier Menu");
-                System.out.println("  [3] Verifier Menu");
-                System.out.println("  [4] Admin Menu");
-                System.out.println("  [0] Exit");
+                printHeader("SUPIFY :: Supplier Discovery & Verification CLI");
+                System.out.println("  [1] Buyer Menu       (Browse, Search, Inspect, Compare)");
+                System.out.println("  [2] Supplier Menu    (Add, Update, Delete, Submit Claim)");
+                System.out.println("  [3] Verifier Menu    (Review Pending Claims, Approve/Reject)");
+                System.out.println("  [4] Files & Monitor  (Expiry Thread, CSV Save/Load, Audit Log, Reset)");
+                System.out.println("  [0] Save & Exit");
 
                 int choice = readInt(sc, "Select [0-4]", -1);
                 if (choice == -2) {
@@ -56,8 +58,9 @@ public class Main {
                         break;
                     case 0:
                         running = false;
+                        saveCsv(platform);
                         monitor.stopMonitor();
-                        System.out.println("\nGoodbye!");
+                        System.out.println("\nSaved catalog to " + CSV_FILE.getPath() + ". Goodbye!");
                         break;
                     default:
                         System.out.println("  Invalid option.");
@@ -73,10 +76,10 @@ public class Main {
         while (true) {
             showAlerts(platform);
             printHeader("BUYER MENU");
-            System.out.println("  [1] List Suppliers");
+            System.out.println("  [1] List All Suppliers");
             System.out.println("  [2] Search & Sort Suppliers");
-            System.out.println("  [3] Inspect Supplier Claims");
-            System.out.println("  [4] Compare 2 Suppliers");
+            System.out.println("  [3] Inspect Supplier & Claims");
+            System.out.println("  [4] Compare Two Suppliers");
             System.out.println("  [0] Back");
 
             int ch = readInt(sc, "Choice [0-4]", -1);
@@ -86,10 +89,8 @@ public class Main {
             if (ch == 1) {
                 printSuppliers(platform.search("", null, "score"));
             } else if (ch == 2) {
-                System.out.print("Keyword / city / category (ENTER for all): ");
-                System.out.flush();
-                if (!sc.hasNextLine()) break;
-                String kw = sc.nextLine().trim();
+                String kw = readLine(sc, "Keyword / city / category (ENTER for all)");
+                if (kw == null) break;
                 int s = readInt(sc, "Sort [1=Score, 2=Capacity, 3=Name]", 1);
                 if (s == -2) break;
                 String sort = "score";
@@ -115,53 +116,132 @@ public class Main {
     }
 
     private static void supplierMenu(Scanner sc, SupifyPlatform platform) {
-        String myId = "SUP-1";
+        String activeId = resolveActiveSupplier(platform, "SUP-1");
         while (true) {
             showAlerts(platform);
-            printHeader("SUPPLIER MENU (" + myId + ")");
-            System.out.println("  [1] My Standing");
-            System.out.println("  [2] Submit Claim + Evidence");
-            System.out.println("  [3] Active Expiry Timers");
+            activeId = resolveActiveSupplier(platform, activeId);
+            Supplier active = (activeId == null) ? null : platform.findById(activeId);
+            String title = (active != null)
+                    ? "SUPPLIER MENU (Active: " + active.getId() + " - " + active.getName() + ")"
+                    : "SUPPLIER MENU (Active: None - Add a supplier first)";
+            printHeader(title);
+            System.out.println("  [1] Switch Active Supplier");
+            System.out.println("  [2] Add New Supplier");
+            System.out.println("  [3] Update Active Supplier");
+            System.out.println("  [4] Delete a Supplier");
+            System.out.println("  [5] Submit Claim + Proof Document");
+            System.out.println("  [6] View Active Expiry Timers");
             System.out.println("  [0] Back");
 
-            int ch = readInt(sc, "Choice [0-3]", -1);
+            int ch = readInt(sc, "Choice [0-6]", -1);
             if (ch == -2 || ch == 0) {
                 break;
             }
             if (ch == 1) {
-                Supplier me = platform.findById(myId);
-                if (me != null) {
-                    System.out.println("\n  " + me + " | Claims: " + platform.getClaimsForSupplier(myId).size());
+                Supplier picked = pickSupplier(sc, platform, "Select active supplier");
+                if (picked != null) {
+                    activeId = picked.getId();
+                    System.out.println("  Switched to " + picked.getId() + " (" + picked.getName() + ").");
                 }
             } else if (ch == 2) {
-                System.out.print("Claim title (e.g. ISO 14001): ");
-                System.out.flush();
-                if (!sc.hasNextLine()) break;
-                String label = sc.nextLine().trim();
-                System.out.print("Pillar [IDENTITY / LEGAL / QUALITY / CAPABILITY]: ");
-                System.out.flush();
-                if (!sc.hasNextLine()) break;
-                String pillar = sc.nextLine().trim().toUpperCase();
-                if (pillar.isEmpty()) pillar = "QUALITY";
-                System.out.print("Certificate / value: ");
-                System.out.flush();
-                if (!sc.hasNextLine()) break;
-                String val = sc.nextLine().trim();
+                String name = readLine(sc, "Supplier name");
+                if (name == null) break;
+                String city = readLine(sc, "City");
+                if (city == null) break;
+                String category = readLine(sc, "Category");
+                if (category == null) break;
+                int cap = readInt(sc, "Monthly capacity (units)", -1);
+                if (cap == -2) break;
+                int moq = readInt(sc, "Minimum order qty (MOQ)", -1);
+                if (moq == -2) break;
+                String lead = readLine(sc, "Lead time [14 days]");
+                if (lead == null) break;
                 try {
-                    Claim c = platform.submitClaim(myId, label.toLowerCase().replace(" ", "_"),
-                            label, pillar, val, label + " PDF", "PDF", "docs/" + label + ".pdf");
-                    System.out.println("  Submitted " + c.getId() + " with PDF evidence for review.");
+                    Supplier created = platform.addSupplier(name, city, category, cap, moq, lead);
+                    activeId = created.getId();
+                    saveCsv(platform);
+                    logAction("Added supplier " + created.getId() + " (" + created.getName() + ")");
+                    System.out.println("  Added " + created.getId() + ": " + created.getName()
+                            + " (saved to " + CSV_FILE.getPath() + ").");
                 } catch (SupifyException e) {
                     System.out.println("  [ERROR] " + e.getMessage());
                 }
             } else if (ch == 3) {
-                System.out.println("\n  Active Timers:");
+                if (active == null) {
+                    System.out.println("  No active supplier selected.");
+                    continue;
+                }
+                String name = readLine(sc, "Name [" + active.getName() + "] (ENTER to keep)");
+                if (name == null) break;
+                String city = readLine(sc, "City [" + active.getCity() + "] (ENTER to keep)");
+                if (city == null) break;
+                String cat = readLine(sc, "Category [" + active.getCategory() + "] (ENTER to keep)");
+                if (cat == null) break;
+                int cap = readIntOrKeep(sc, "Capacity [" + active.getCapacityPerMonth() + "] (ENTER to keep)");
+                if (cap == -2) break;
+                int moq = readIntOrKeep(sc, "MOQ [" + active.getMoq() + "] (ENTER to keep)");
+                if (moq == -2) break;
+                String lead = readLine(sc, "Lead time [" + active.getLeadTime() + "] (ENTER to keep)");
+                if (lead == null) break;
+                try {
+                    Supplier updated = platform.updateSupplier(active.getId(), name, city, cat, cap, moq, lead);
+                    saveCsv(platform);
+                    logAction("Updated supplier " + updated.getId() + " (" + updated.getName() + ")");
+                    System.out.println("  Updated: " + updated);
+                } catch (SupifyException e) {
+                    System.out.println("  [ERROR] " + e.getMessage());
+                }
+            } else if (ch == 4) {
+                Supplier target = pickSupplier(sc, platform, "Select supplier to delete");
+                if (target == null) continue;
+                String confirm = readLine(sc, "Delete " + target.getId() + " (" + target.getName() + ")? (Y/N) [N]");
+                if (confirm == null) break;
+                if (confirm.equalsIgnoreCase("Y")) {
+                    if (platform.deleteSupplier(target.getId())) {
+                        saveCsv(platform);
+                        logAction("Deleted supplier " + target.getId() + " (" + target.getName() + ")");
+                        System.out.println("  Deleted " + target.getId() + ".");
+                        if (target.getId().equals(activeId)) {
+                            activeId = null;
+                        }
+                    }
+                } else {
+                    System.out.println("  Delete cancelled.");
+                }
+            } else if (ch == 5) {
+                if (active == null) {
+                    System.out.println("  Please add or select a supplier first.");
+                    continue;
+                }
+                String label = readLine(sc, "Claim title (e.g. ISO 14001)");
+                if (label == null) break;
+                String pillar = readLine(sc, "Pillar [IDENTITY / LEGAL / QUALITY / CAPABILITY]");
+                if (pillar == null) break;
+                pillar = pillar.toUpperCase();
+                if (pillar.isEmpty()) pillar = "QUALITY";
+                String val = readLine(sc, "Certificate / value");
+                if (val == null) break;
+                try {
+                    Claim c = platform.submitClaim(active.getId(), label.toLowerCase().replace(" ", "_"),
+                            label, pillar, val, label + " PDF", "PDF", "docs/" + label + ".pdf");
+                    logAction("Submitted claim " + c.getId() + " for " + active.getId());
+                    System.out.println("  Submitted " + c.getId() + " with PDF evidence for verifier review.");
+                } catch (SupifyException e) {
+                    System.out.println("  [ERROR] " + e.getMessage());
+                }
+            } else if (ch == 6) {
+                if (active == null) {
+                    System.out.println("  No active supplier selected.");
+                    continue;
+                }
+                System.out.println("\n  Active Timers for " + active.getId() + ":");
                 int count = 0;
-                for (Claim c : platform.getClaimsForSupplier(myId)) {
+                for (Claim c : platform.getClaimsForSupplier(active.getId())) {
                     Attestation a = platform.getActiveAttestationForClaim(c.getId());
                     if (a != null) {
                         System.out.println("  - " + c.getLabel() + " -> " + a.getState()
-                                + " via " + a.getMethod() + " (" + a.secondsLeft() + "s left)");
+                                + " via " + a.getMethod() + " (verified " + formatTime(a)
+                                + ", " + a.secondsLeft() + "s left)");
                         count++;
                     }
                 }
@@ -178,8 +258,8 @@ public class Main {
         while (true) {
             showAlerts(platform);
             printHeader("VERIFIER MENU");
-            System.out.println("  [1] Pending Claims");
-            System.out.println("  [2] Approve / Reject Claim");
+            System.out.println("  [1] View Pending Claims");
+            System.out.println("  [2] Approve or Reject Claim");
             System.out.println("  [0] Back");
 
             int ch = readInt(sc, "Choice [0-2]", -1);
@@ -209,42 +289,55 @@ public class Main {
     private static void adminMenu(Scanner sc, SupifyPlatform platform, DecayMonitorThread monitor) {
         while (true) {
             showAlerts(platform);
-            printHeader("ADMIN MENU");
-            System.out.println("  [1] Thread Status");
-            System.out.println("  [2] CSV Export / Import");
-            System.out.println("  [3] Audit Log (File I/O)");
+            printHeader("FILES & MONITOR MENU");
+            System.out.println("  [1] Background Thread Status");
+            System.out.println("  [2] Save & Reload CSV Now");
+            System.out.println("  [3] View Audit Log");
+            System.out.println("  [4] Reset to 5 Default Sample Suppliers");
             System.out.println("  [0] Back");
 
-            int ch = readInt(sc, "Choice [0-3]", -1);
+            int ch = readInt(sc, "Choice [0-4]", -1);
             if (ch == -2 || ch == 0) {
                 break;
             }
             if (ch == 1) {
                 monitor.printThreadInfo();
             } else if (ch == 2) {
-                File csvFile = new File("data/suppliers.csv");
                 try {
-                    FileHelper.exportToCsv(csvFile, platform.findAll());
-                    List<Supplier> imported = FileHelper.importFromCsv(csvFile);
+                    FileHelper.exportToCsv(CSV_FILE, platform.findAll());
+                    List<Supplier> imported = FileHelper.importFromCsv(CSV_FILE);
                     List<String> names = new ArrayList<>();
                     for (Supplier s : imported) {
                         names.add(s.getName());
                     }
-                    System.out.println("  Synced " + imported.size() + " suppliers to " + csvFile.getPath() + ": " + names);
+                    System.out.println("  Saved & reloaded " + imported.size() + " suppliers from "
+                            + CSV_FILE.getPath() + ": " + names);
                 } catch (IOException e) {
                     System.out.println("  [ERROR] CSV error: " + e.getMessage());
                 }
             } else if (ch == 3) {
-                File logFile = new File("data/audit.log");
                 try {
-                    FileHelper.appendAuditLog(logFile, "Admin checkpoint saved.");
-                    List<String> lines = FileHelper.readAuditLog(logFile);
-                    System.out.println("\n--- " + logFile.getPath() + " ---");
-                    for (String line : lines) {
-                        System.out.println("  " + line);
+                    List<String> lines = FileHelper.readAuditLog(LOG_FILE);
+                    System.out.println("\n--- " + LOG_FILE.getPath() + " ---");
+                    if (lines.isEmpty()) {
+                        System.out.println("  (Audit log is empty yet.)");
+                    } else {
+                        for (String line : lines) {
+                            System.out.println("  " + line);
+                        }
                     }
                 } catch (IOException e) {
                     System.out.println("  [ERROR] Audit log error: " + e.getMessage());
+                }
+            } else if (ch == 4) {
+                String confirm = readLine(sc, "Reset all suppliers to default 5? (Y/N) [N]");
+                if (confirm == null) break;
+                if (confirm.equalsIgnoreCase("Y")) {
+                    platform.resetToSampleData(CSV_FILE);
+                    logAction("Reset catalog to 5 default sample suppliers.");
+                    System.out.println("  Reset complete. Catalog restored to 5 default suppliers.");
+                } else {
+                    System.out.println("  Reset cancelled.");
                 }
             } else {
                 System.out.println("  Invalid option.");
@@ -274,7 +367,8 @@ public class Main {
             Attestation a = platform.getActiveAttestationForClaim(c.getId());
             if (a != null) {
                 System.out.println("      Attest   : " + a.getId() + " [" + a.getState()
-                        + " via " + a.getMethod() + ", " + a.secondsLeft() + "s left]");
+                        + " via " + a.getMethod() + ", verified " + formatTime(a)
+                        + ", " + a.secondsLeft() + "s left]");
             } else {
                 System.out.println("      Attest   : [NO ACTIVE ATTESTATION - Claim status: " + c.getStatus() + "]");
             }
@@ -307,20 +401,18 @@ public class Main {
         else if (m == 3) method = VerificationMethod.HUMAN_AUDIT;
         else if (m == 4) method = VerificationMethod.SITE_VISIT;
 
-        System.out.print("Approve? (Y/N) [Y]: ");
-        System.out.flush();
-        if (!sc.hasNextLine()) return;
-        String ans = sc.nextLine().trim();
+        String ans = readLine(sc, "Approve? (Y/N) [Y]");
+        if (ans == null) return;
         boolean approved = ans.isEmpty() || ans.equalsIgnoreCase("Y");
 
-        System.out.print("Note (ENTER for default): ");
-        System.out.flush();
-        if (!sc.hasNextLine()) return;
-        String note = sc.nextLine().trim();
+        String note = readLine(sc, "Note (ENTER for default)");
+        if (note == null) return;
         if (note.isEmpty()) note = "Reviewed uploaded proof.";
 
         try {
             VerificationCheck check = platform.verifyClaim(target.getId(), "Verifier-01", method, approved, note, 86400);
+            saveCsv(platform);
+            logAction("Verified " + target.getId() + " -> " + check.getOutcome() + " (" + method + ")");
             System.out.println("  Saved: " + check);
             Supplier updated = platform.findById(target.getSupplierId());
             if (updated != null) {
@@ -331,8 +423,27 @@ public class Main {
         }
     }
 
+    private static String resolveActiveSupplier(SupifyPlatform platform, String currentId) {
+        if (currentId != null && platform.findById(currentId) != null) {
+            return currentId;
+        }
+        if (platform.findById("SUP-1") != null) {
+            return "SUP-1";
+        }
+        List<Supplier> all = platform.findAll();
+        if (all.isEmpty()) {
+            return null;
+        }
+        all.sort((a, b) -> a.getId().compareTo(b.getId()));
+        return all.get(0).getId();
+    }
+
     private static Supplier pickSupplier(Scanner sc, SupifyPlatform platform, String label) {
         List<Supplier> all = platform.findAll();
+        if (all.isEmpty()) {
+            System.out.println("  No suppliers in catalog yet.");
+            return null;
+        }
         all.sort((a, b) -> a.getId().compareTo(b.getId()));
         System.out.println();
         for (int i = 0; i < all.size(); i++) {
@@ -373,6 +484,35 @@ public class Main {
         }
     }
 
+    private static void saveCsv(SupifyPlatform platform) {
+        try {
+            FileHelper.exportToCsv(CSV_FILE, platform.findAll());
+        } catch (IOException e) {
+            System.out.println("  [ERROR] Could not save CSV: " + e.getMessage());
+        }
+    }
+
+    private static void logAction(String message) {
+        try {
+            FileHelper.appendAuditLog(LOG_FILE, message);
+        } catch (IOException e) {
+            System.out.println("  [ERROR] Could not write log: " + e.getMessage());
+        }
+    }
+
+    private static String formatTime(Attestation a) {
+        return a.getVerifiedAt().toString().substring(0, 19).replace('T', ' ');
+    }
+
+    private static String readLine(Scanner sc, String prompt) {
+        System.out.print(prompt + ": ");
+        System.out.flush();
+        if (!sc.hasNextLine()) {
+            return null;
+        }
+        return sc.nextLine().trim();
+    }
+
     private static int readInt(Scanner sc, String prompt, int defaultVal) {
         if (defaultVal >= 0) {
             System.out.print(prompt + " [" + defaultVal + "]: ");
@@ -392,5 +532,24 @@ public class Main {
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+
+    private static int readIntOrKeep(Scanner sc, String prompt) {
+        String input = readLine(sc, prompt);
+        if (input == null) {
+            return -2;
+        }
+        if (input.isEmpty()) {
+            return 0;
+        }
+        try {
+            int val = Integer.parseInt(input);
+            if (val > 0) {
+                return val;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        System.out.println("  Invalid positive number; keeping existing value.");
+        return 0;
     }
 }

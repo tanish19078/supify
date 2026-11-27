@@ -13,7 +13,7 @@ supplier-platform/
 ├── src/                        # React frontend (Vite, React Router 6, Tailwind, Zustand)
 ├── public/data/                # JSON fixtures served over HTTP to the frontend
 ├── backend/
-│   ├── src/com/supify/         # Pure-Java CLI across 4 packages (14 .java files)
+│   ├── src/com/supify/         # Pure-Java CLI across 4 packages (13 .java files)
 │   ├── bin/                    # Compiled .class files (gitignored)
 │   ├── run.bat                 # Compile & launch Main
 │   ├── test.bat                # Compile & run TestApp (7 checks)
@@ -66,7 +66,7 @@ npm run build
 
 ## 4. Running the Java Backend CLI (`backend/`)
 
-The backend CLI runs standalone with zero external JARs using `SupifyPlatform` and `loadSampleData()`.
+The backend CLI runs standalone with zero external JARs using `SupifyPlatform` and auto-saves changes into `backend/data/suppliers.csv`.
 
 ### Option A: One-Click Windows Batch Scripts
 
@@ -87,10 +87,11 @@ java -cp bin com.supify.app.TestApp
 
 ### Quick CLI Demo Flow
 
-1. Launch `backend\run.bat`.
+1. Launch `backend\run.bat` (auto-loads `backend/data/suppliers.csv`, or creates 5 sample suppliers on first run).
 2. **Buyer Menu (`[1]`):** List suppliers (`[1]`), search/sort (`[2]`), inspect `SUP-1`'s 4-layer Claim -> Evidence -> VerificationCheck -> Attestation chain (`[3]`), or compare 2 suppliers (`[4]`).
-3. **Supplier & Verifier Menus (`[2]` -> `[3]`):** Watch active expiry countdowns under `[2] -> [3]` (including `SUP-1`'s 30-second badge decaying via `DecayMonitorThread`), submit a claim with PDF evidence (`[2] -> [2]`), and approve/reject in `[3]`.
-4. **Admin Menu (`[4]`):** View thread status (`[1]`), CSV export/import (`[2]`), and plain-text audit log (`[3]`).
+3. **Supplier Menu (`[2]`):** Switch active supplier (`[1]`), **Add New Supplier** (`[2]`), **Update Active Supplier** (`[3]`), **Delete a Supplier** (`[4]`), submit a claim with PDF evidence (`[5]`), and watch active expiry countdowns (`[6]`, including `SUP-1`'s 30-second badge decaying via `DecayMonitorThread`).
+4. **Verifier Menu (`[3]`):** View pending claims (`[1]`) and approve/reject a claim (`[2]`) to update trust score and `data/suppliers.csv`.
+5. **Files & Monitor Menu (`[4]`):** View thread status (`[1]`), save & reload CSV (`[2]`), view `audit.log` (`[3]`), or reset back to the 5 default sample suppliers (`[4]`).
 
 ---
 

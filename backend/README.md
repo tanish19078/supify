@@ -1,20 +1,19 @@
 # Supify — Java Backend & CLI
 
-Clean pure-Java console application (**14 `.java` files across 4 packages** + `run.bat` & `test.bat`).
+Simple pure-Java console application (**13 `.java` files across 4 packages** + `run.bat` & `test.bat`), organized cleanly for a 4-member project.
 
 ---
 
-## 1. Course Concepts Covered (25CSE0202)
+## 1. Core Java Concepts Covered
 
 | Concept | Implementation | File(s) |
 | :--- | :--- | :--- |
 | **OOP, Encapsulation & Enums** | 4-layer entities (`Supplier`, `Claim`, `Evidence`, `final VerificationCheck`, `Attestation`) + enums (`TrustBand`, `VerificationMethod`) | `com.supify.model.*` |
-| **Generics & Collections** | Generic `Repository<T, ID>`, `HashMap`, `ArrayList`, `<>` diamond | `Repository.java`, `SupifyPlatform.java` |
-| **Lambda Expressions & Streams** | `.stream().filter(...).sorted(...).collect(Collectors.toList())` search & sorting | `SupifyPlatform.java` |
+| **Collections, Comparators & Lambdas** | `HashMap`, `ArrayList`, diamond `<>`, lambda `Comparator` search/sorting & Supplier CRUD | `SupifyPlatform.java` |
 | **Custom Checked Exception** | `SupifyException extends Exception` for validation guards | `SupifyException.java`, `SupifyPlatform.java` |
 | **Multithreading & Synchronization** | Daemon `DecayMonitorThread(platform)` (`sleep`, `interrupt`, `volatile`) sharing `synchronized SupifyPlatform` | `DecayMonitorThread.java`, `SupifyPlatform.java` |
-| **File I/O (Character Streams)** | Buffered `FileWriter`/`FileReader` CSV catalog export/import & append-mode `audit.log` | `FileHelper.java` |
-| **Automated Verification** | Zero-dependency 7-check suite | `TestApp.java` |
+| **File I/O (Character Streams)** | Buffered `FileWriter`/`FileReader` automatic CSV startup/save persistence (`data/suppliers.csv`) & append-mode `audit.log` | `FileHelper.java`, `SupifyPlatform.java` |
+| **Interactive CRUD & Automated Tests** | Add/Update/Delete/Switch Supplier + zero-dependency 7-check suite | `Main.java`, `TestApp.java` |
 
 ---
 
@@ -23,7 +22,7 @@ Clean pure-Java console application (**14 `.java` files across 4 packages** + `r
 ```text
 backend/
 ├── src/com/supify/
-│   ├── model/                    # 7 files: 4-layer spine entities + enums
+│   ├── model/                    # 7 files: 4-layer spine entities + enums (Member 1)
 │   │   ├── TrustBand.java
 │   │   ├── VerificationMethod.java
 │   │   ├── Supplier.java
@@ -31,17 +30,17 @@ backend/
 │   │   ├── Evidence.java
 │   │   ├── VerificationCheck.java
 │   │   └── Attestation.java
-│   ├── dao/                      # 2 files: generic repo & File I/O
-│   │   ├── Repository.java
+│   ├── dao/                      # 1 file: CSV & audit log File I/O (Member 2)
 │   │   └── FileHelper.java
-│   ├── service/                  # 3 files: exception, shared platform, daemon thread
+│   ├── service/                  # 3 files: exception, shared platform, daemon thread (Member 3)
 │   │   ├── SupifyException.java
 │   │   ├── SupifyPlatform.java
 │   │   └── DecayMonitorThread.java
-│   └── app/                      # 2 files: CLI entry + automated tests
+│   └── app/                      # 2 files: CLI menus + automated tests (Member 4)
 │       ├── Main.java
 │       └── TestApp.java
 ├── bin/                          # Compiled .class files (gitignored)
+├── data/                         # Persistent suppliers.csv and audit.log (gitignored)
 ├── run.bat                       # Compile & run Main
 ├── test.bat                      # Compile & run TestApp
 └── README.md
@@ -53,7 +52,7 @@ backend/
 
 ### Windows Batch Scripts
 Inside `backend\`:
-- Run **`run.bat`** to compile and open the interactive CLI (`Buyer`, `Supplier`, `Verifier`, `Admin` menus).
+- Run **`run.bat`** to compile and open the interactive CLI (`Buyer`, `Supplier`, `Verifier`, `Files & Monitor` menus).
 - Run **`test.bat`** to compile and run the 7-check test suite (`TestApp`).
 
 ### Manual Commands
