@@ -22,7 +22,8 @@ backend/data/
 practigen_*.json
 context_pack*.json
 
-# Local study notes
+# Local study notes & diagrams
 study/
+.archify/
 
 
