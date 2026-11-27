@@ -4,7 +4,7 @@ Architecture summary for the 13-file pure-Java backend under `backend/src/com/su
 
 ---
 
-## 1. 4-Package Architecture
+## 1. 4-Package Layered Architecture
 
 ```mermaid
 flowchart TD
@@ -15,12 +15,13 @@ flowchart TD
     SVC --> DAO
     SVC --> MODEL
     DAO --> MODEL
+    DAO --> FS[("Local File I/O<br/>data/suppliers.csv, data/proofs/, data/audit.log")]
 ```
 
-| Package | Files | Role |
+| Package | Classes | Responsibility |
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | 4-layer verification spine & enums |
-| `com.supify.dao` | `FileHelper` | CSV catalog & plain-text `audit.log` File I/O |
+| `com.supify.dao` | `FileHelper` | CSV catalog, byte-stream proof copy, & plain-text `audit.log` File I/O |
 | `com.supify.service` | `SupifyException`, `SupifyPlatform`, `ExpiryThread` | Custom checked exception, shared synchronized platform (CRUD, CSV persistence, Comparator search, trust rules), daemon thread |
 | `com.supify.app` | `Main`, `TestApp` | Interactive console menus (with Add/Update/Delete Supplier) and 7 automated checks |
 
@@ -47,6 +48,7 @@ classDiagram
     class FileHelper {
         +exportToCsv(File, List)$ void
         +importFromCsv(File)$ List~Supplier~
+        +copyProofFile(File, File)$ File
         +appendAuditLog(File, String)$ void
         +readAuditLog(File)$ List~String~
     }

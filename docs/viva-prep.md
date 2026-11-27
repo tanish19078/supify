@@ -19,7 +19,7 @@ Quick revision notes aligned to the **13-file pure-Java backend** (`backend/src/
 | Package | Classes | Java Concepts Covered |
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | OOP, Encapsulation, Enums with fields, `final` immutability, `LocalDateTime` & `Duration` |
-| `com.supify.dao` | `FileHelper` | Character File I/O (`FileWriter`/`FileReader` + buffered CSV persistence & append-mode `audit.log`) |
+| `com.supify.dao` | `FileHelper` | Character & Byte File I/O (`FileWriter`/`FileReader` CSV persistence, `FileInputStream`/`FileOutputStream` proof copy, & append-mode `audit.log`) |
 | `com.supify.service` | `SupifyException`, `SupifyPlatform`, `ExpiryThread` | Custom checked exception (`extends Exception`), `HashMap`/`ArrayList`, `synchronized`, `Comparator` lambdas (`search`), Authority Split, Trust Capping, Daemon thread (`extends Thread`, `setDaemon(true)`, `volatile`, `sleep`, `interrupt`) |
 | `com.supify.app` | `Main`, `TestApp` | Interactive CRUD menus (`Scanner`, classic `switch`/`case`), try-with-resources & `finally`, 7-test suite |
 
