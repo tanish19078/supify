@@ -1,6 +1,6 @@
 # Supify — Java Backend Architecture
 
-Architecture summary for the 15-file pure-Java backend under `backend/src/com/supify/` (**4 packages**: `model`, `dao`, `service`, `app`).
+Architecture summary for the 14-file pure-Java backend under `backend/src/com/supify/` (**4 packages**: `model`, `dao`, `service`, `app`).
 
 ---
 
@@ -9,7 +9,7 @@ Architecture summary for the 15-file pure-Java backend under `backend/src/com/su
 ```mermaid
 flowchart TD
     APP["app (Main, TestApp)"] --> SVC["service (SupifyPlatform, DecayMonitorThread, SupifyException)"]
-    APP --> DAO["dao (Repository, FileHelper, JdbcSupplierDao)"]
+    APP --> DAO["dao (Repository, FileHelper)"]
     APP --> MODEL["model (7 Spine Entities & Enums)"]
 
     SVC --> DAO
@@ -20,9 +20,9 @@ flowchart TD
 | Package | Files | Role |
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | 4-layer verification spine & enums |
-| `com.supify.dao` | `Repository<T, ID>`, `FileHelper`, `JdbcSupplierDao` | Generic CRUD contract, CSV/log File I/O, MySQL JDBC CRUD |
+| `com.supify.dao` | `Repository<T, ID>`, `FileHelper` | Generic CRUD contract, CSV/log File I/O |
 | `com.supify.service` | `SupifyException`, `SupifyPlatform`, `DecayMonitorThread` | Custom checked exception, shared synchronized platform (storage, Stream search, trust rules), daemon thread |
-| `com.supify.app` | `Main`, `TestApp` | Interactive console menus and 8 automated checks |
+| `com.supify.app` | `Main`, `TestApp` | Interactive console menus and 7 automated checks |
 
 ---
 
@@ -49,14 +49,6 @@ classDiagram
         +getAndClearAlerts() List~String~
     }
 
-    class JdbcSupplierDao {
-        +isDriverLoaded()$ boolean
-        +testConnection()$ boolean
-        +save(Supplier s) Supplier
-        +findById(String id) Supplier
-        +findAll() List~Supplier~
-    }
-
     class FileHelper {
         +exportToCsv(File, List)$ void
         +importFromCsv(File)$ List~Supplier~
@@ -76,7 +68,6 @@ classDiagram
     }
 
     Repository <|.. SupifyPlatform
-    Repository <|.. JdbcSupplierDao
     Thread <|-- DecayMonitorThread
     Exception <|-- SupifyException
     SupifyPlatform ..> SupifyException

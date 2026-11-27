@@ -1,7 +1,6 @@
 package com.supify.app;
 
 import com.supify.dao.FileHelper;
-import com.supify.dao.JdbcSupplierDao;
 import com.supify.model.Claim;
 import com.supify.model.Supplier;
 import com.supify.model.TrustBand;
@@ -14,7 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.List;
 
-// Runs 8 simple checks covering all topics in our Java syllabus
+// Runs 7 simple checks covering all topics in our Java syllabus
 public class TestApp {
     private static int passed = 0;
     private static int failed = 0;
@@ -29,7 +28,6 @@ public class TestApp {
         testDaemonDecay();
         testFileHelper();
         testExceptionGuards();
-        testJdbcDriverCheck();
 
         System.out.println("\n=== TEST SUMMARY: " + passed + " PASSED, " + failed + " FAILED ===");
         if (failed > 0) {
@@ -160,15 +158,6 @@ public class TestApp {
         try { platform.verifyClaim(pending.getId(), "Ver", VerificationMethod.DOCUMENT_REVIEW, true, "  ", 60); } catch (SupifyException e) { blankNote = true; }
 
         check("7. Checked SupifyException Guards", missingSup && blankLabel && missingClaim && blankNote);
-    }
-
-    private static void testJdbcDriverCheck() {
-        String url = JdbcSupplierDao.getUrl();
-        boolean loaded = JdbcSupplierDao.isDriverLoaded();
-        boolean hasNote = !JdbcSupplierDao.getLastError().isEmpty();
-
-        check("8. JDBC Config & Driver Check",
-                url != null && url.startsWith("jdbc:mysql://") && (loaded || hasNote));
     }
 
     private static void check(String name, boolean condition) {

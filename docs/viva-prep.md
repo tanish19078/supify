@@ -1,6 +1,6 @@
 # Supify — Java Backend & Database Viva Guide
 
-Quick revision notes aligned to the **15-file pure-Java backend** (`backend/src/com/supify/` across **4 packages**: `model`, `dao`, `service`, `app`) and **5-table MySQL schema** (`db/`).
+Quick revision notes aligned to the **14-file pure-Java backend** (`backend/src/com/supify/` across **4 packages**: `model`, `dao`, `service`, `app`) and **5-table MySQL schema** (`db/`).
 
 ---
 
@@ -9,19 +9,19 @@ Quick revision notes aligned to the **15-file pure-Java backend** (`backend/src/
 - **Problem:** A buyer cannot cheaply tell whether a supplier truly holds claimed certifications or if they are still valid today.
 - **4-Layer Spine (no `boolean isVerified` shortcut):** `Claim` (supplier assertion) → `Evidence` (uploaded document) → `VerificationCheck` (`final` immutable PASS/FAIL check) → `Attestation` (time-bounded active badge expiring automatically via `DecayMonitorThread`).
 - **Simple Thread-Safe Architecture:** Just like our classroom `Account` / `OrderQueue` pattern, one shared `SupifyPlatform` holds all state and business rules cleanly, and `DecayMonitorThread(platform)` runs alongside `Main`.
-- **Launch Tests:** Run `backend\test.bat` (`TestApp` runs 8 automated checks).
+- **Launch Tests:** Run `backend\test.bat` (`TestApp` runs 7 automated checks).
 - **Launch CLI:** Run `backend\run.bat` (`Main` opens Buyer, Supplier, Verifier, and Admin menus with a 30-second live expiry demo on `SUP-1`).
 
 ---
 
-## 2. Architecture by Package (4 Packages, 15 Files)
+## 2. Architecture by Package (4 Packages, 14 Files)
 
 | Package | Classes | Syllabus Concepts |
 | :--- | :--- | :--- |
 | `com.supify.model` | `TrustBand`, `VerificationMethod`, `Supplier`, `Claim`, `Evidence`, `VerificationCheck`, `Attestation` | OOP, Encapsulation, Enums with fields, `final` immutability, `LocalDateTime` & `Duration` |
-| `com.supify.dao` | `Repository<T, ID>`, `FileHelper`, `JdbcSupplierDao` | Generics (`<T, ID>`), Character File I/O (`FileWriter`/`FileReader` + buffered CSV & `audit.log`), JDBC (`PreparedStatement`, `ResultSet`) |
+| `com.supify.dao` | `Repository<T, ID>`, `FileHelper` | Generics (`<T, ID>`), Character File I/O (`FileWriter`/`FileReader` + buffered CSV & `audit.log`) |
 | `com.supify.service` | `SupifyException`, `SupifyPlatform`, `DecayMonitorThread` | Custom checked exception (`extends Exception`), `HashMap`/`ArrayList`, `synchronized`, Java Stream API & lambdas (`search`), Authority Split, Trust Capping, Daemon thread (`extends Thread`, `setDaemon(true)`, `volatile`, `sleep`, `interrupt`) |
-| `com.supify.app` | `Main`, `TestApp` | Interactive menus (`Scanner`, classic `switch`/`case`), try-with-resources & `finally`, 8-test verification |
+| `com.supify.app` | `Main`, `TestApp` | Interactive menus (`Scanner`, classic `switch`/`case`), try-with-resources & `finally`, 7-test verification |
 
 ---
 
@@ -43,7 +43,5 @@ Quick revision notes aligned to the **15-file pure-Java backend** (`backend/src/
    Inside `SupifyPlatform.search()` using `.stream().filter(...).sorted(getComparator(sortBy)).collect(Collectors.toList())`.
 8. **How does `FileHelper` handle CSV & audit log I/O safely?**  
    Uses `BufferedWriter(new FileWriter(...))` and `BufferedReader(new FileReader(...))` inside try-with-resources; `appendAuditLog` passes `true` (`new FileWriter(file, true)`) to append lines without overwriting older logs.
-9. **Why use `PreparedStatement` with `?` in `JdbcSupplierDao`?**  
-   Treats user values as bound data parameters (`ps.setString`, `ps.setInt`, `ps.setDouble`), blocking SQL injection cleanly. Uses `executeUpdate()` for `INSERT`/`UPDATE`/`DELETE` and `executeQuery()` + `ResultSet` for `SELECT`.
-10. **How is the MySQL database organized?**  
-    5 simple tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) in `db/schema/01_supify_schema.sql` seeded by `db/seeds/01_canonical_suppliers.sql`, matching the 5 Java model classes 1:1.
+9. **How is the MySQL database organized?**  
+   5 simple tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) in `db/schema/01_supify_schema.sql` seeded by `db/seeds/01_canonical_suppliers.sql`, matching the 5 Java model classes 1:1.

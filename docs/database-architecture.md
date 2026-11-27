@@ -1,4 +1,4 @@
-# Supify — MySQL 8.0 ER Diagram & JDBC Data Flow
+# Supify — MySQL 8.0 ER Diagram & Schema Architecture
 
 Relational database specification for [`db/`](../db/README.md) and [`backend/`](../backend/README.md).
 
@@ -73,15 +73,17 @@ erDiagram
 
 ---
 
-## 2. Java JDBC Connection Flow
+## 2. Schema Notes & Verification Integrity
 
 ```mermaid
 flowchart LR
-    CLI["Main (Admin -> [4] MySQL JDBC Status)"] --> DAO["JdbcSupplierDao (DriverManager + PreparedStatement + ResultSet)"]
-    DAO -->|"Class.forName"| DRV["mysql-connector-j (*.jar in backend/lib)"]
-    DRV -->|"JDBC over TCP 3306"| DB["MySQL 8.0 (supify)"]
-    DB --> TBL["5 Tables: supplier, claim, evidence, verification_check, attestation"]
+    SUP["supplier"] -->|"1:N"| CLM["claim"]
+    CLM -->|"1:N"| EVD["evidence"]
+    CLM -->|"1:N"| CHK["verification_check (immutable PASS/FAIL)"]
+    CHK -->|"1:N"| ATT["attestation (time-bounded valid_until)"]
+    CLM -->|"1:N"| ATT
 ```
 
-- **`JdbcSupplierDao`** (`backend/src/com/supify/dao/JdbcSupplierDao.java`) handles driver loading (`Class.forName`), `DriverManager.getConnection(...)`, `testConnection()`, and parameterized `PreparedStatement` + `ResultSet` CRUD against the `supplier` table (`save`, `findById`, `findAll`, `updateTrust`, `deleteById`, `count`).
-- No boolean `is_verified` column exists; supplier trust is stored cleanly as `trust_band` + `trust_score` derived from the verification spine (`claim`, `evidence`, `verification_check`, `attestation`).
+- **1:1 alignment with `com.supify.model`:** The 5 tables (`supplier`, `claim`, `evidence`, `verification_check`, `attestation`) mirror the 5 Java entity classes in `backend/src/com/supify/model/` directly.
+- **No boolean verification shortcut:** No `is_verified` column exists; supplier trust is stored cleanly as `trust_band` + `trust_score` derived from active rows in `attestation`.
+- **CLI runtime vs. SQL scripts:** The Java CLI runs in memory via `SupifyPlatform` and persists CSV exports and `audit.log` in `backend/data/` via `FileHelper`; `db/` holds the standalone MySQL 8.0 DDL schema and canonical seed data for relational querying (`mysql -u root -p supify`).

@@ -1,6 +1,6 @@
 # Supify — Java Backend & CLI
 
-Clean pure-Java console application (**15 `.java` files across 4 packages** + `run.bat` & `test.bat`).
+Clean pure-Java console application (**14 `.java` files across 4 packages** + `run.bat` & `test.bat`).
 
 ---
 
@@ -14,8 +14,7 @@ Clean pure-Java console application (**15 `.java` files across 4 packages** + `r
 | **Custom Checked Exception** | `SupifyException extends Exception` for validation guards | `SupifyException.java`, `SupifyPlatform.java` |
 | **Multithreading & Synchronization** | Daemon `DecayMonitorThread(platform)` (`sleep`, `interrupt`, `volatile`) sharing `synchronized SupifyPlatform` | `DecayMonitorThread.java`, `SupifyPlatform.java` |
 | **File I/O (Character Streams)** | Buffered `FileWriter`/`FileReader` CSV catalog export/import & append-mode `audit.log` | `FileHelper.java` |
-| **JDBC & MySQL CRUD** | `Class.forName`, `DriverManager`, `PreparedStatement`, `executeQuery`/`executeUpdate`, `ResultSet` | `JdbcSupplierDao.java` |
-| **Automated Verification** | Zero-dependency 8-check suite | `TestApp.java` |
+| **Automated Verification** | Zero-dependency 7-check suite | `TestApp.java` |
 
 ---
 
@@ -32,10 +31,9 @@ backend/
 │   │   ├── Evidence.java
 │   │   ├── VerificationCheck.java
 │   │   └── Attestation.java
-│   ├── dao/                      # 3 files: generic repo, File I/O & JDBC
+│   ├── dao/                      # 2 files: generic repo & File I/O
 │   │   ├── Repository.java
-│   │   ├── FileHelper.java
-│   │   └── JdbcSupplierDao.java
+│   │   └── FileHelper.java
 │   ├── service/                  # 3 files: exception, shared platform, daemon thread
 │   │   ├── SupifyException.java
 │   │   ├── SupifyPlatform.java
@@ -44,7 +42,6 @@ backend/
 │       ├── Main.java
 │       └── TestApp.java
 ├── bin/                          # Compiled .class files (gitignored)
-├── lib/                          # Optional mysql-connector-j-*.jar
 ├── run.bat                       # Compile & run Main
 ├── test.bat                      # Compile & run TestApp
 └── README.md
@@ -57,14 +54,14 @@ backend/
 ### Windows Batch Scripts
 Inside `backend\`:
 - Run **`run.bat`** to compile and open the interactive CLI (`Buyer`, `Supplier`, `Verifier`, `Admin` menus).
-- Run **`test.bat`** to compile and run the 8-check test suite (`TestApp`).
+- Run **`test.bat`** to compile and run the 7-check test suite (`TestApp`).
 
 ### Manual Commands
 ```bat
 cd backend
 if exist bin rd /s /q bin
 mkdir bin
-javac -d bin -sourcepath src src\com\supify\app\Main.java src\com\supify\app\TestApp.java src\com\supify\dao\JdbcSupplierDao.java
-java -cp "bin;lib\*" com.supify.app.Main
-java -cp "bin;lib\*" com.supify.app.TestApp
+javac -d bin -sourcepath src src\com\supify\app\Main.java src\com\supify\app\TestApp.java
+java -cp bin com.supify.app.Main
+java -cp bin com.supify.app.TestApp
 ```

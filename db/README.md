@@ -60,8 +60,4 @@ LEFT JOIN verification_check vc ON vc.claim_id = c.id
 LEFT JOIN attestation a ON a.claim_id = c.id;
 ```
 
-### Connect from Java (`JdbcSupplierDao`)
-- Default connection: `jdbc:mysql://localhost:3306/supify?...`, user `root`, password `root` (override password with `SUPIFY_DB_PASS`).
-- Place `mysql-connector-j-*.jar` in `backend/lib/` and run **`Admin Menu [4] -> [4] MySQL JDBC Status`**.
-
 See [`docs/database-architecture.md`](../docs/database-architecture.md) for the ER diagram and [`docs/setup.md`](../docs/setup.md) for setup troubleshooting.

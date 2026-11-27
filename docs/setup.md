@@ -1,6 +1,6 @@
 # Supify — Setup, Run & Demo Guide
 
-Complete local setup instructions for all three parts of the repository: the React Frontend (`src/`), the Pure-Java Backend CLI (`backend/`), and the MySQL 8.0 Database & JDBC Layer (`db/`).
+Complete local setup instructions for all three parts of the repository: the React Frontend (`src/`), the Pure-Java Backend CLI (`backend/`), and the MySQL 8.0 Database (`db/`).
 
 ---
 
@@ -13,11 +13,10 @@ supplier-platform/
 ├── src/                        # React frontend (Vite, React Router 6, Tailwind, Zustand)
 ├── public/data/                # JSON fixtures served over HTTP to the frontend
 ├── backend/
-│   ├── src/com/supify/         # Pure-Java CLI across 4 packages (15 .java files)
-│   ├── lib/                    # Optional external JARs (mysql-connector-j-*.jar, gitignored)
+│   ├── src/com/supify/         # Pure-Java CLI across 4 packages (14 .java files)
 │   ├── bin/                    # Compiled .class files (gitignored)
 │   ├── run.bat                 # Compile & launch Main
-│   ├── test.bat                # Compile & run TestApp (8 checks)
+│   ├── test.bat                # Compile & run TestApp (7 checks)
 │   └── README.md               # Java backend reference
 ├── db/
 │   ├── schema/                 # MySQL 8.0 DDL (01_supify_schema.sql - 5 tables)
@@ -30,7 +29,7 @@ supplier-platform/
     ├── understanding.md        # Problem framing, design axioms & trust model
     ├── architecture.md         # Frontend architecture & state contracts
     ├── backend-architecture.md # Backend UML class diagrams, sequences & concurrency charts
-    └── database-architecture.md# MySQL 8.0 ER diagram & JDBC flow
+    └── database-architecture.md# MySQL 8.0 ER diagram & 5-table schema flow
 ```
 
 ---
@@ -41,8 +40,7 @@ supplier-platform/
 | :--- | :--- | :--- | :--- |
 | **Frontend (`src/`)** | Node.js & npm | Node 18+ | Serves Vite dev server and runs Vitest suite |
 | **Backend (`backend/`)** | Java Development Kit (JDK) | JDK 17+ | `javac` and `java` available on `PATH`; no Maven/Gradle needed |
-| **Database (`db/`)** | MySQL Server + `mysql` CLI | MySQL 8.0+ | Optional for pure in-memory CLI mode; required for JDBC checks |
-| **JDBC Driver** | `mysql-connector-j-*.jar` | 8.x+ (tested on 26.10.0) | Place inside `backend/lib/` (excluded from Git by `.gitignore`) |
+| **Database (`db/`)** | MySQL Server + `mysql` CLI | MySQL 8.0+ | Standalone 5-table relational schema & canonical seed scripts |
 
 ---
 
@@ -74,7 +72,7 @@ The backend CLI runs standalone with zero external JARs using `SupifyPlatform` a
 
 Inside `backend\`:
 - Run **`run.bat`** to compile into `bin\` and start `com.supify.app.Main`.
-- Run **`test.bat`** to compile and run the 8-check test suite (`com.supify.app.TestApp`).
+- Run **`test.bat`** to compile and run the 7-check test suite (`com.supify.app.TestApp`).
 
 ### Option B: Manual Compile & Run Commands
 
@@ -82,9 +80,9 @@ From `backend\`:
 
 ```bat
 if not exist bin mkdir bin
-javac -d bin -sourcepath src src\com\supify\app\Main.java src\com\supify\app\TestApp.java src\com\supify\dao\JdbcSupplierDao.java
-java -cp "bin;lib\*" com.supify.app.Main
-java -cp "bin;lib\*" com.supify.app.TestApp
+javac -d bin -sourcepath src src\com\supify\app\Main.java src\com\supify\app\TestApp.java
+java -cp bin com.supify.app.Main
+java -cp bin com.supify.app.TestApp
 ```
 
 ### Quick CLI Demo Flow
@@ -92,11 +90,11 @@ java -cp "bin;lib\*" com.supify.app.TestApp
 1. Launch `backend\run.bat`.
 2. **Buyer Menu (`[1]`):** List suppliers (`[1]`), search/sort (`[2]`), inspect `SUP-1`'s 4-layer Claim -> Evidence -> VerificationCheck -> Attestation chain (`[3]`), or compare 2 suppliers (`[4]`).
 3. **Supplier & Verifier Menus (`[2]` -> `[3]`):** Watch active expiry countdowns under `[2] -> [3]` (including `SUP-1`'s 30-second badge decaying via `DecayMonitorThread`), submit a claim with PDF evidence (`[2] -> [2]`), and approve/reject in `[3]`.
-4. **Admin Menu (`[4]`):** View thread status (`[1]`), CSV export/import (`[2]`), plain-text audit log (`[3]`), and MySQL JDBC status (`[4]`).
+4. **Admin Menu (`[4]`):** View thread status (`[1]`), CSV export/import (`[2]`), and plain-text audit log (`[3]`).
 
 ---
 
-## 5. Setting Up MySQL 8.0 & JDBC (`db/`)
+## 5. Setting Up MySQL 8.0 (`db/`)
 
 ### Step 1: Initialize 5-Table Schema & Seeds
 
@@ -106,26 +104,13 @@ Run **`db\setup_mysql.bat`** (from Explorer or terminal):
   1. `db/schema/01_supify_schema.sql` (recreates `supify` database + 5 basic tables: `supplier`, `claim`, `evidence`, `verification_check`, `attestation`)
   2. `db/seeds/01_canonical_suppliers.sql` (seeds 5 suppliers, 12 claims, 12 evidence rows, 10 checks, and 10 attestations)
 
-### Step 2: Stage the MySQL JDBC Driver
+### Step 2: Querying the Database Directly
 
-Copy `mysql-connector-j-*.jar` into **`backend\lib\`** (ignored by `.gitignore`). Both `backend\run.bat` and `backend\test.bat` include `-cp "bin;lib\*"` automatically.
-
-### Step 3: Optional Password Override
-
-Default JDBC settings in `JdbcSupplierDao` connect to `jdbc:mysql://localhost:3306/supify?...` using user `root` and password `root`. If your MySQL password differs, set `SUPIFY_DB_PASS`:
-
-```bat
-set SUPIFY_DB_PASS=your_password
-```
-
-### Step 4: Check Connection Inside the CLI
-
-Launch `backend\run.bat`, open **`[4] Admin Menu`**, and choose **`[4] MySQL JDBC Status`** to check `Driver: true` and `Connected: true`.
+Connect with the MySQL client (`mysql -u root -p supify`) to inspect the tables (`SHOW TABLES;`, `SELECT * FROM supplier;`, or joins across `claim`, `evidence`, `verification_check`, and `attestation`).
 
 ---
 
 ## 6. Windows Troubleshooting
 
 - **`javac` or `mysql` not recognized:** Add your JDK `bin` folder and MySQL `bin` folder to Windows `PATH`.
-- **PowerShell splitting `-cp bin;lib\*`:** Always quote `"bin;lib\*"` so PowerShell does not split on `;`.
 - **Stale `.class` files in `backend/bin/`:** Delete `backend/bin/` and re-run `backend\run.bat` for a clean rebuild.

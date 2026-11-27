@@ -1,7 +1,6 @@
 package com.supify.app;
 
 import com.supify.dao.FileHelper;
-import com.supify.dao.JdbcSupplierDao;
 import com.supify.model.Attestation;
 import com.supify.model.Claim;
 import com.supify.model.Evidence;
@@ -214,10 +213,9 @@ public class Main {
             System.out.println("  [1] Thread Status");
             System.out.println("  [2] CSV Export / Import");
             System.out.println("  [3] Audit Log (File I/O)");
-            System.out.println("  [4] MySQL JDBC Status");
             System.out.println("  [0] Back");
 
-            int ch = readInt(sc, "Choice [0-4]", -1);
+            int ch = readInt(sc, "Choice [0-3]", -1);
             if (ch == -2 || ch == 0) {
                 break;
             }
@@ -247,13 +245,6 @@ public class Main {
                     }
                 } catch (IOException e) {
                     System.out.println("  [ERROR] Audit log error: " + e.getMessage());
-                }
-            } else if (ch == 4) {
-                System.out.println("  JDBC URL : " + JdbcSupplierDao.getUrl());
-                System.out.println("  Driver   : " + JdbcSupplierDao.isDriverLoaded());
-                System.out.println("  Connected: " + JdbcSupplierDao.testConnection());
-                if (!JdbcSupplierDao.getLastError().isEmpty()) {
-                    System.out.println("  Note     : " + JdbcSupplierDao.getLastError());
                 }
             } else {
                 System.out.println("  Invalid option.");
