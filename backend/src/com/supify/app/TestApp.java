@@ -144,6 +144,9 @@ public class TestApp {
 
         File csvFile = new File("data/test_suppliers.csv");
         File logFile = new File("data/test_audit.log");
+        File srcProof = new File("data/test_proof.pdf");
+        File proofDir = new File("data/test_proofs");
+        File copiedProof = new File(proofDir, "test_proof.pdf");
         try {
             FileHelper.exportToCsv(csvFile, platform.findAll());
             try (FileWriter fw = new FileWriter(csvFile, true)) {
@@ -153,11 +156,21 @@ public class TestApp {
             FileHelper.appendAuditLog(logFile, "test audit entry");
             List<String> lines = FileHelper.readAuditLog(logFile);
 
-            check("6. CSV Export/Import & Audit Log (File I/O)",
-                    imported.size() == 5 && lines.size() == 1 && lines.get(0).contains("test audit entry"));
+            try (FileWriter fw = new FileWriter(srcProof)) {
+                fw.write("dummy pdf content");
+            }
+            File saved = FileHelper.copyProofFile(srcProof, proofDir);
+
+            check("6. CSV Export/Import, Proof Copy & Audit Log (File I/O)",
+                    imported.size() == 5 && lines.size() == 1
+                            && lines.get(0).contains("test audit entry")
+                            && saved.exists() && saved.length() == srcProof.length());
         } finally {
             csvFile.delete();
             logFile.delete();
+            srcProof.delete();
+            copiedProof.delete();
+            proofDir.delete();
         }
     }
 

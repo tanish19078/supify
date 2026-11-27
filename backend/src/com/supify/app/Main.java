@@ -221,11 +221,32 @@ public class Main {
                 if (pillar.isEmpty()) pillar = "QUALITY";
                 String val = readLine(sc, "Certificate / value");
                 if (val == null) break;
+                String inputPath = readLine(sc, "Proof file path (e.g. C:\\cert.pdf, or ENTER for default)");
+                if (inputPath == null) break;
+                inputPath = inputPath.replace("\"", "").trim();
+
+                String storedPath = "docs/" + label + ".pdf";
+                if (!inputPath.isEmpty()) {
+                    File proofFile = new File(inputPath);
+                    if (proofFile.exists() && proofFile.isFile()) {
+                        try {
+                            File copied = FileHelper.copyProofFile(proofFile, new File("data/proofs"));
+                            storedPath = copied.getPath();
+                            System.out.println("  Copied proof file to " + storedPath);
+                        } catch (IOException e) {
+                            storedPath = inputPath;
+                            System.out.println("  [WARN] Could not copy file (" + e.getMessage() + "); saved path as reference.");
+                        }
+                    } else {
+                        storedPath = inputPath;
+                        System.out.println("  Note: file not found on disk; saved path as reference.");
+                    }
+                }
                 try {
                     Claim c = platform.submitClaim(active.getId(), label.toLowerCase().replace(" ", "_"),
-                            label, pillar, val, label + " PDF", "PDF", "docs/" + label + ".pdf");
-                    logAction("Submitted claim " + c.getId() + " for " + active.getId());
-                    System.out.println("  Submitted " + c.getId() + " with PDF evidence for verifier review.");
+                            label, pillar, val, label + " Proof", "PDF", storedPath);
+                    logAction("Submitted claim " + c.getId() + " for " + active.getId() + " (" + storedPath + ")");
+                    System.out.println("  Submitted " + c.getId() + " with proof (" + storedPath + ") for verifier review.");
                 } catch (SupifyException e) {
                     System.out.println("  [ERROR] " + e.getMessage());
                 }
