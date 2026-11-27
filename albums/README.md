@@ -1,36 +1,37 @@
-# Supify — Visual Albums (Diagrams, Database, CLI Demo & Frontend UI)
+# Supify — Visual Albums (Diagrams, CLI Demo, Database & Frontend UI)
 
-Organized gallery of all architecture diagrams, live MySQL 8.0 / JDBC outputs, pure-Java CLI demo captures, and frontend UI screenshots.
+Organized gallery of all architecture diagrams, pure-Java 13-file CLI demo captures, MySQL 8.0 5-table outputs, and React frontend screenshots.
 
 ---
 
 ## 1. Architecture Diagrams (`albums/diagrams/`)
 
-### Reconstructed UML Class Diagram (4 Packages · 14 Application Classes)
+### Pure-Java UML Class Diagram (4 Packages · 13 Classes · 4-Member Architecture)
 ![Supify UML Class Diagram](diagrams/supify_uml_class_diagram.png)
 
-### Reconstructed MySQL 8.0 ER Diagram (5 InnoDB Tables = 1:1 with Java Models)
+### MySQL 8.0 ER Diagram (5 Relational Tables = 1:1 with Java Models)
 ![Supify MySQL 8.0 ER Diagram](diagrams/supify_er_diagram.png)
 
 ---
 
-## 2. Live MySQL 8.0 & JDBC Outputs (`albums/database/`)
+## 2. Pure-Java Interactive CLI Demo (`albums/cli-demo/`)
 
-### Live 5-Table Entries (49 Seeded Rows) & `JdbcSupplierDao` CRUD
-![Live MySQL 8.0 Entries and JDBC CRUD](database/db_live_mysql_entries.png)
+1. **Buyer Discovery (`[1]`):** [01_buyer_search_compare.png](cli-demo/01_buyer_search_compare.png) — 5 seeded suppliers ranked by score, lambda `Comparator` search (`Pune`), and side-by-side comparison.
+2. **4-Layer Verification Spine (`[1] → [3]`):** [02_four_layer_spine.png](cli-demo/02_four_layer_spine.png) — `Claim → Evidence → VerificationCheck → Attestation` with live `30s` TTL countdown on `SUP-1`.
+3. **Supplier CRUD, Byte-Stream Proof Copy & Verifier Approval (`[2]` → `[3]`):** [03_supplier_to_verifier.png](cli-demo/03_supplier_to_verifier.png) — Adds `SUP-6`, copies local PDF proof into `data/proofs/` via `FileInputStream`/`FileOutputStream`, submits `SUBMITTED` claim, and approves in Verifier Menu.
+4. **Files & Expiry Monitor (`[4]`):** [04_files_and_expiry_monitor.png](cli-demo/04_files_and_expiry_monitor.png) — `main` + `ExpiryThread` (`daemon=true`), `data/suppliers.csv` save/reload, `data/audit.log` trail, and catalog reset to 5 default suppliers.
+5. **Automated 7-Check Suite (`backend\test.bat`):** [05_automated_test_suite.png](cli-demo/05_automated_test_suite.png) — `TestApp.java` verifying CRUD & CSV restart persistence, Comparator search, 4-layer spine, capping, `ExpiryThread` decay, File I/O, and `SupifyException` guards (`7 PASSED, 0 FAILED`).
+
+---
+
+## 3. MySQL 8.0 5-Table Database Outputs (`albums/database/`)
+
+### Standalone 5-Table Schema & 49-Row Verification Spine Join
+![MySQL 8.0 5-Table Entries](database/db_live_mysql_entries.png)
 
 - [Verifier Queue SQL Output](database/02_uc01_verifier_queue_output.png)
 - [Supplier Ledger SQL Output](database/03_uc02_supplier_ledger_output.png)
 - [Faceted Search SQL Output](database/04_uc03_search_faceted_output.png)
-
----
-
-## 3. Pure-Java Interactive CLI Demo (`albums/cli-demo/`)
-
-1. **Buyer Discovery (`[1]`):** [01_buyer_search_compare.png](cli-demo/01_buyer_search_compare.png) — 5 seeded suppliers, Java Stream search (`Pune`), and side-by-side comparison.
-2. **4-Layer Verification Spine (`[1] → [3]`):** [02_four_layer_spine.png](cli-demo/02_four_layer_spine.png) — `Claim → Evidence → VerificationCheck → Attestation` with live `29s` TTL countdown.
-3. **Authority Split (`[2]` Supplier → `[3]` Verifier):** [03_supplier_to_verifier.png](cli-demo/03_supplier_to_verifier.png) — Supplier submits `ISO 14001` + PDF (`SUBMITTED`); Verifier approves via `HUMAN_AUDIT` and standing recalculates live (`0.85 → 0.87`).
-4. **Admin Console & Live JDBC (`[4]`):** [04_admin_threads_io_jdbc_connected.png](cli-demo/04_admin_threads_io_jdbc_connected.png) — `DecayMonitor` daemon thread, `data/suppliers.csv` sync, append-only `data/audit.log`, and MySQL **`Connected: true`**.
 
 ---
 
